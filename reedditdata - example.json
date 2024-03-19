@@ -1,1 +1,44 @@
-{"channels": [{"name":"Media","subs":["movies","television","music","games","books"]},{"name":"testChannel2","subs":["test1","test2","test3"]}], "subreddits": ["frontPage","all","pics","IAmA","AskReddit","worldNews","todayilearned","tech","science","reactiongifs","books","explainLikeImFive","videos","AdviceAnimals","funny","aww","earthporn"]}
+{
+    "channels": [
+        {
+            "name": "Media",
+            "subs": [
+                "movies",
+                "television",
+                "music",
+                "games",
+                "books"
+            ]
+        },
+        {
+            "name": "testChannel2",
+            "subs": [
+                "test1",
+                "test2",
+                "test3"
+            ]
+        }
+    ],
+    "subreddits": [
+        {
+            "subreddit": "frontPage",
+            "regex": "front"
+        },
+        {
+            "subreddit": "all",
+            "regex": "all"
+        },
+        {
+            "subreddit": "pics",
+            "regex": "pics"
+        },
+        {
+            "subreddit": "tech",
+            "regex": "technologies"
+        },
+        {
+            "subreddit": "cryptocurrencies",
+            "regex": "bnb"
+        }
+    ]
+}

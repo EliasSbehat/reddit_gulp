@@ -93,7 +93,7 @@ var Posts = (function () {
 		}
 	};
 
-	var load = function (baseUrl, paging) {
+	var load = function (baseUrl, paging, regex) {
 		if (loading) {
 			return;
 		}
@@ -115,12 +115,20 @@ var Posts = (function () {
 			}, Menu.isShowing() ? 301 : 1);
 			paging = ''; // empty string, to avoid pagination
 		}
-
 		$.ajax({
 			dataType: 'jsonp',
 			url: baseUrl + Sorting.get() + URLs.limitEnd + paging,
 			success: (result) => {
-				show(result, paging);
+				if (regex) {
+					var regexData = new RegExp(regex, 'i');
+					console.log(result);
+					let filteredPosts = result;
+					filteredPosts.data.children = result.data.children.filter(post => regexData.test(post.data.title));
+					show(filteredPosts, paging);
+					console.log(filteredPosts, regex);
+				} else {
+					show(result, paging);
+				}
 			},
 			error: () => {
 				loading = false;
@@ -283,6 +291,7 @@ var Posts = (function () {
 		if (Subreddits.isEditing()) {
 			return;
 		}
+		console.log(CurrentSelection, ',,');
 		CurrentSelection.execute(function () { // if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
 				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");

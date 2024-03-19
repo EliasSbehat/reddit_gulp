@@ -63,7 +63,18 @@
 }
 
 #form-new-sub {
-	height: 50px;
+	height: 100px;
+	top: 50%;
+	margin-top: -100px;
+
+	input {
+		@include size(100%, 40px);
+		font-size: 20px;
+		outline: none;
+	}
+}
+#form-update-sub {
+	height: 100px;
 	top: 50%;
 	margin-top: -100px;
 

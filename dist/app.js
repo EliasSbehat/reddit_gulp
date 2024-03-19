@@ -1589,7 +1589,7 @@ var Posts = (function () {
 		}
 	};
 
-	var load = function load(baseUrl, paging) {
+	var load = function load(baseUrl, paging, regex) {
 		if (loading) {
 			return;
 		}
@@ -1611,12 +1611,22 @@ var Posts = (function () {
 			}, Menu.isShowing() ? 301 : 1);
 			paging = ''; // empty string, to avoid pagination
 		}
-
 		$.ajax({
 			dataType: 'jsonp',
 			url: baseUrl + Sorting.get() + URLs.limitEnd + paging,
 			success: function success(result) {
-				show(result, paging);
+				if (regex) {
+					var regexData = new RegExp(regex, 'i');
+					console.log(result);
+					var filteredPosts = result;
+					filteredPosts.data.children = result.data.children.filter(function (post) {
+						return regexData.test(post.data.title);
+					});
+					show(filteredPosts, paging);
+					console.log(filteredPosts, regex);
+				} else {
+					show(result, paging);
+				}
 			},
 			error: function error() {
 				loading = false;
@@ -1773,6 +1783,7 @@ var Posts = (function () {
 		if (Subreddits.isEditing()) {
 			return;
 		}
+		console.log(CurrentSelection, ',,');
 		CurrentSelection.execute(function () {
 			// if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
@@ -1996,7 +2007,22 @@ var Sorting = (function () {
 
 var Subreddits = (function () {
 
-	var defaults = ["frontPage", "all", "videos", "mealtimevideos", "worldNews", "CombatFootage", "tech", "science", "CryptoCurrency", "Superstonk"],
+	var defaults = [{
+		"subreddit": "frontPage",
+		"regex": "f"
+	}, {
+		"subreddit": "all",
+		"regex": "a"
+	}, {
+		"subreddit": "pics",
+		"regex": "p"
+	}, {
+		"subreddit": "tech",
+		"regex": "t"
+	}, {
+		"subreddit": "cryptocurrencies",
+		"regex": "crypto"
+	}],
 	    list = [],
 	    idLast = '',
 	    editing = false,
@@ -2005,11 +2031,12 @@ var Subreddits = (function () {
 	var subredditClasses = 'sub pad-x pad-y blck no-ndrln txt-cap txt-ellps';
 
 	var template = {
-		list: "{{#.}}<a href='#{{.}}' data-name='{{.}}' class='" + subredditClasses + "'>{{.}}</a>{{/.}}",
-		toEditList: "<div class='edit-subs-title pad-x pad-y txt-bld txt-cntr'>Subreddits</div><ul class='no-mrgn no-pad'>{{#.}}<div class='item-to-edit flx sub-to-remove' data-name='{{.}}'><p class='sub-name w-85 txt-cap txt-bld'>{{.}}</p><a href='#remove' class='no-ndrln clr-current flx flx-cntr-x flx-cntr-y w-15 btn-remove-sub icon-trashcan' data-name='{{.}}'></a></div>{{/.}}</ul>",
+		list: "{{#.}}<a href='#{{subreddit}}' data-name='{{subreddit}}' class='" + subredditClasses + "'>{{subreddit}}</a>{{/.}}",
+		toEditList: "<div class='edit-subs-title pad-x pad-y txt-bld txt-cntr'>Subreddits</div><ul class='no-mrgn no-pad'>{{#.}}<div class='item-to-edit flx sub-to-remove' data-name='{{subreddit}}'><p class='sub-name w-85 txt-cap txt-bld'>{{subreddit}} (regex: {{regex}})</p><a href='#edit_sub' rid='{{subreddit}}' class='flx flx-cntr-x flx-cntr-y w-15 no-ndrln clr-current btn-edit-sub icon-pencil'></a><a href='#remove' class='no-ndrln clr-current flx flx-cntr-x flx-cntr-y w-15 btn-remove-sub icon-trashcan' data-name='{{subreddit}}'></a></div>{{/.}}</ul>",
 		toAddList: "{{#children}}<div class='sub-to-add flx w-100'><div class='w-85'><p class='sub-to-add__title js-sub-title txt-bld'>{{data.display_name}}</p><p class='sub-to-add__description'>{{data.public_description}}</p></div><a href='#add' class='btn-add-sub no-ndrln flx flx-cntr-x flx-cntr-y w-15 icon-plus-circle'></a></div>{{/children}}",
 		loadMoreSubsButton: "<button class='btn blck w-50 mrgn-y mrgn-cntr-x' id='btn-more-subs'>More</button>",
-		formInsert: "<div class=\"new-form\" id=\"form-new-sub\"><div class=\"form-left-corner\"><button class=\"btn\" id=\"btn-add-new-sub\">Add Subreddit</button></div>" + UI.template.closeModalButton + "<form><input type=\"text\" id=\"txt-new-sub\" placeholder=\"New subreddit name\" /></form></div>",
+		formInsert: "<div class=\"new-form\" id=\"form-new-sub\"><div class=\"form-left-corner\"><button class=\"btn\" id=\"btn-add-new-sub\">Add Subreddit</button></div>" + UI.template.closeModalButton + "<form><input type=\"text\" id=\"txt-new-sub\" placeholder=\"New subreddit name\" /><input type=\"text\" id=\"txt-new-reg\" placeholder=\"Regex\" style=\"margin-top: 10px;\" /></form></div>",
+		formUpdate: "<div class=\"new-form\" id=\"form-update-sub\"><div class=\"form-left-corner\"><button class=\"btn\" id=\"btn-update-new-sub\">Update Subreddit</button></div>" + UI.template.closeModalButton + "<form><input type=\"text\" id=\"txt-update-sub\" placeholder=\"Subreddit name\" /><input type=\"text\" id=\"txt-update-reg\" placeholder=\"Regex\" style=\"margin-top: 10px;\" /></form></div>",
 		topButtonsForAdding: "<div class='flx flx-cntr-x pad-x pad-y'><button id='btn-sub-man' class='btn group-btn'>Insert Manually</button><button id='btn-add-channel' class='btn group-btn'>Create Channel</button></div>"
 	};
 
@@ -2025,14 +2052,19 @@ var Subreddits = (function () {
 		return editing;
 	};
 
-	var insert = function insert(sub) {
-		list.push(sub);
+	var insert = function insert(sub, reg) {
+		list.push({
+			"subreddit": sub,
+			"regex": reg
+		});
 		Store.setItem("subreeddits", JSON.stringify(list));
 		Backup.shouldUpdate();
 	};
 
 	var _delete = function _delete(sub) {
-		var idx = list.indexOf(sub);
+		var idx = list.findIndex(function (obj) {
+			return obj.subreddit === sub;
+		});
 		list.splice(idx, 1);
 		Store.setItem("subreeddits", JSON.stringify(list));
 		Backup.shouldUpdate();
@@ -2066,7 +2098,7 @@ var Subreddits = (function () {
 		if (list) {
 			newSub = newSub.toLowerCase();
 			for (var i = list.length; --i;) {
-				var sub = list[i];
+				var sub = list[i].subreddit;
 				if (sub.toLowerCase() === newSub) {
 					return true;
 				}
@@ -2081,7 +2113,7 @@ var Subreddits = (function () {
 		    frontPage = 'frontpage',
 		    all = 'all';
 		for (var i = 0; i < list.length; i++) {
-			var sub = list[i].toLowerCase();
+			var sub = list[i].subreddit.toLowerCase();
 			if (sub === frontPage || sub === all) {
 				continue;
 			}
@@ -2105,6 +2137,9 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function loadPosts(sub) {
+		var results = defaults.filter(function (item) {
+			return item.subreddit.toLowerCase() === sub.toLowerCase();
+		});
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;
 			if (sub.toLowerCase() === 'frontpage') {
@@ -2112,32 +2147,46 @@ var Subreddits = (function () {
 			} else {
 				url = URLs.init + "r/" + sub + "/";
 			}
-			Posts.load(url);
+			console.log(url);
+			Posts.load(url, "", results[0].regex);
 			CurrentSelection.setSubreddit(sub);
 		}
 		UI.setSubTitle(sub);
 	};
 
 	var remove = function remove(sub) {
+		console.log(sub);
 		_delete(sub);
 		detach(sub);
 		if (CurrentSelection.getType() === CurrentSelection.Types.SUB && CurrentSelection.getName() === sub) {
 			// If it was the current selection
-			CurrentSelection.setSubreddit('frontPage');
+			CurrentSelection.setSubreddit(defaults[0].subreddit);
 		}
 	};
 
-	var add = function add(newSub) {
+	var add = function add(newSub, regex) {
 		if (listHasSub(newSub)) {
 			return;
 		}
-		insert(newSub);
+		insert(newSub, regex);
 		append(newSub);
+	};
+	var update = function update(newSub, regex) {
+		var originalSub = localStorage.getItem("update_sub");
+		if (listHasSub(newSub)) {
+			return;
+		}
+		_delete(originalSub);
+		detach(originalSub);
+		insert(newSub, regex);
+		append(newSub);
+		localStorage.removeItem('update_sub');
 	};
 
 	var addFromNewForm = function addFromNewForm() {
 		var txtSub = $$.id("txt-new-sub"),
 		    subName = txtSub.value;
+		var txtReg = $("#txt-new-reg").val();
 		if (!subName) {
 			txtSub.setAttribute("placeholder", "Enter a subreddit title!");
 			Anim.shakeForm();
@@ -2158,14 +2207,69 @@ var Subreddits = (function () {
 			url: URLs.init + "r/" + subName + "/" + Sorting.get() + URLs.limitEnd,
 			dataType: 'jsonp',
 			success: function success(data) {
-				Posts.loadFromManualInput(data);
+				if (txtReg) {
+					var regexData = new RegExp(txtReg, 'i');
+					var filteredPosts = data;
+					filteredPosts.data.children = data.data.children.filter(function (post) {
+						return regexData.test(post.data.title);
+					});
+					Posts.loadFromManualInput(filteredPosts);
+				} else {
+					Posts.loadFromManualInput(data);
+				}
 				UI.setSubTitle(subName);
 				CurrentSelection.setSubreddit(subName);
-				add(subName);
+				add(subName, txtReg);
 				Menu.markSelected({
 					name: subName,
 					update: true
 				});
+			},
+			error: function error() {
+				alert('Oh, the subreddit you entered is not valid...');
+			}
+		});
+	};
+	var updateFromNewForm = function updateFromNewForm() {
+		var txtSub = $$.id("txt-update-sub"),
+		    subName = txtSub.value;
+		var txtReg = $("#txt-update-reg").val();
+		if (!subName) {
+			txtSub.setAttribute("placeholder", "Enter a subreddit title!");
+			Anim.shakeForm();
+			return;
+		}
+		if (listHasSub(subName)) {
+			txtSub.value = "";
+			txtSub.setAttribute("placeholder", subName + " already added!");
+			Anim.shakeForm();
+			return;
+		}
+
+		subName = subName.trim();
+
+		Anim.bounceOut($(".new-form"), Modal.remove);
+
+		$.ajax({
+			url: URLs.init + "r/" + subName + "/" + Sorting.get() + URLs.limitEnd,
+			dataType: 'jsonp',
+			success: function success(data) {
+				// if (txtReg) {
+				// 	var regexData = new RegExp(txtReg, 'i');
+				// 	let filteredPosts = data;
+				// 	filteredPosts.data.children = data.data.children.filter(post => regexData.test(post.data.title));
+				// 	Posts.loadFromManualInput(filteredPosts);
+				// } else {
+				// 	Posts.loadFromManualInput(data);
+				// }
+				// UI.setSubTitle(subName);
+				// CurrentSelection.setSubreddit(subName);
+				// add(subName, txtReg);
+				update(subName, txtReg);
+				// Menu.markSelected({
+				// 	name: subName,
+				// 	update: true
+				// });
 			},
 			error: function error() {
 				alert('Oh, the subreddit you entered is not valid...');
@@ -2258,8 +2362,13 @@ var Subreddits = (function () {
 			e.preventDefault();
 			addFromNewForm();
 		});
+		UI.el.body.on('submit', '#form-update-sub form', function (e) {
+			e.preventDefault();
+			updateFromNewForm();
+		});
 
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
+		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
 
 		UI.el.body.on('click', "#btn-add-another-sub", function () {
 			var container = $("#subs-for-channel");
@@ -2269,6 +2378,19 @@ var Subreddits = (function () {
 
 		UI.el.mainWrap.on('click', '#btn-sub-man', function () {
 			Modal.show(template.formInsert);
+		});
+		UI.el.mainWrap.on('click', '.btn-edit-sub', function () {
+			var originalSubreddit = $(this).attr('rid');
+			var originalResult = defaults.filter(function (item) {
+				return item.subreddit.toLowerCase() === originalSubreddit.toLowerCase();
+			});
+			var originalRegex = originalResult[0].regex;
+			Modal.show(template.formUpdate);
+			setTimeout(function () {
+				localStorage.setItem("update_sub", originalSubreddit);
+				$('#txt-update-sub').val(originalSubreddit);
+				$('#txt-update-reg').val(originalRegex);
+			}, 500);
 		});
 
 		UI.el.mainWrap.on('click', '#btn-more-subs', function (ev) {
@@ -2298,7 +2420,7 @@ var Subreddits = (function () {
 			    subTitle = $(".js-sub-title", parent);
 			subTitle.css("color", "#2b9900"); // 'adding sub' little UI feedback
 			var newSub = subTitle.text();
-			add(newSub);
+			add(newSub, "");
 		});
 
 		UI.el.mainWrap.on('click', '.btn-remove-sub', function (ev) {
