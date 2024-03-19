@@ -44,7 +44,8 @@ var UI = (function() {
 
 	const template = {
 		loader: "<div class='loader'></div>",
-		closeModalButton: "<a href='#close' class='close-form no-ndrln txt-cntr txt-bld'>&times;</a>"
+		closeModalButton: "<a href='#close' class='close-form no-ndrln txt-cntr txt-bld'>&times;</a>",
+		closeThreadButton: "<a href='#close' class='close-thread no-ndrln txt-cntr txt-bld' style='margin-top:38px;'>&times;</a>"
 	};
 
 	const el = {
@@ -246,6 +247,12 @@ var UI = (function() {
 		el.body.on('click', '.close-form', (ev) => {
 			ev.preventDefault();
 			Modal.remove();
+		});
+		el.body.on('click', '.close-thread', (ev) => {
+			ev.preventDefault();
+			// Modal.remove();
+			$(".detail-view").removeClass("show-view");
+			$(".main-view").addClass("show-view");
 		});
 
 		// Swipes

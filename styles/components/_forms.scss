@@ -97,6 +97,18 @@
 	line-height: 28px;
 	-webkit-touch-callout: none;
 }
+.close-thread {
+	$size: 35px;
+	@include size($size);
+	position: absolute;
+	top: -$size;
+	right: 0;
+	z-index: 10001;
+	color: #F5F5F5;
+	font-size: 30px;
+	line-height: 28px;
+	-webkit-touch-callout: none;
+}
 
 .form-left-corner {
 	position: absolute;

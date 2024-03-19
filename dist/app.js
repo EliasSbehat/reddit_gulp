@@ -46,7 +46,8 @@ var UI = (function () {
 
 	var template = {
 		loader: "<div class='loader'></div>",
-		closeModalButton: "<a href='#close' class='close-form no-ndrln txt-cntr txt-bld'>&times;</a>"
+		closeModalButton: "<a href='#close' class='close-form no-ndrln txt-cntr txt-bld'>&times;</a>",
+		closeThreadButton: "<a href='#close' class='close-thread no-ndrln txt-cntr txt-bld' style='margin-top:38px;'>&times;</a>"
 	};
 
 	var el = {
@@ -247,6 +248,12 @@ var UI = (function () {
 		el.body.on('click', '.close-form', function (ev) {
 			ev.preventDefault();
 			Modal.remove();
+		});
+		el.body.on('click', '.close-thread', function (ev) {
+			ev.preventDefault();
+			// Modal.remove();
+			$(".detail-view").removeClass("show-view");
+			$(".main-view").addClass("show-view");
 		});
 
 		// Swipes
@@ -1127,7 +1134,7 @@ var Header = (function () {
 
 var LinkSummary = (function () {
 
-	var template = "\n\t\t<section id='link-summary'>\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
+	var template = "\n\t\t<section id='link-summary'>\n\t\t\t" + UI.template.closeThreadButton + "\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
 
 	var setPostSummary = function setPostSummary(data, postID) {
 		if (!data.link) {
@@ -2194,9 +2201,9 @@ var Subreddits = (function () {
 	};
 	var update = function update(newSub, regex) {
 		var originalSub = localStorage.getItem("update_sub");
-		if (listHasSub(newSub)) {
-			return;
-		}
+		// if (listHasSub(newSub)) {
+		// 	return;
+		// }
 		_delete(originalSub);
 		detach(originalSub);
 		insert(newSub, regex);
@@ -2260,12 +2267,12 @@ var Subreddits = (function () {
 			Anim.shakeForm();
 			return;
 		}
-		if (listHasSub(subName)) {
-			txtSub.value = "";
-			txtSub.setAttribute("placeholder", subName + " already added!");
-			Anim.shakeForm();
-			return;
-		}
+		// if (listHasSub(subName)) {
+		// 	txtSub.value = "";
+		// 	txtSub.setAttribute("placeholder", subName + " already added!");
+		// 	Anim.shakeForm();
+		// 	return;
+		// }
 
 		subName = subName.trim();
 
@@ -2401,6 +2408,10 @@ var Subreddits = (function () {
 
 		UI.el.mainWrap.on('click', '#btn-sub-man', function () {
 			Modal.show(template.formInsert);
+		});
+		UI.el.mainWrap.on('click', '.link-wrap', function () {
+			$(".main-view").removeClass("show-view");
+			$(".detail-view").addClass("show-view");
 		});
 		UI.el.mainWrap.on('click', '.btn-edit-sub', function () {
 			var originalSubreddit = $(this).attr('rid');

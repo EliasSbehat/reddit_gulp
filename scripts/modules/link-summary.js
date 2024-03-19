@@ -13,6 +13,7 @@ var LinkSummary = (function() {
 
 	const template = `
 		<section id='link-summary'>
+			${UI.template.closeThreadButton}
 			<a href='{{url}}'
 			   target='_blank'
 			   class='no-ndrln'>
