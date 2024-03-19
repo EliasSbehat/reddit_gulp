@@ -1185,7 +1185,6 @@ var LinkSummary = (function () {
 		updatePostTime(data.created_utc);
 		Posts.getList()[postID].num_comments = data.num_comments;
 		Posts.getList()[postID].created_utc = data.created_utc;
-		console.log('------------------------');
 	};
 
 	var updatePostTime = function updatePostTime(time) {
@@ -1813,7 +1812,7 @@ var Posts = (function () {
 	var initListeners = function initListeners() {
 
 		UI.el.mainWrap.on('click', '.js-link', function (ev) {
-			ev.preventDefault();
+			// ev.preventDefault();
 
 			if (!is.wideScreen) {
 				return;

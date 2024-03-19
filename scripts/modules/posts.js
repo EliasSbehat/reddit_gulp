@@ -320,7 +320,7 @@ var Posts = (function () {
 	var initListeners = function () {
 
 		UI.el.mainWrap.on('click', '.js-link', function (ev) {
-			ev.preventDefault();
+			// ev.preventDefault();
 
 			if (!is.wideScreen) {
 				return;

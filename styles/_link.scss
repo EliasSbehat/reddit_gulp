@@ -29,6 +29,20 @@
 .tagline {
 	margin-top: 0;
     margin-bottom: 0;
+	color: rgb(136, 136, 136);
+	font-size: 10px;
+}
+.link-info {
+	font-size: 10px;
+}
+.tagline a {
+	text-decoration: none;
+	color: rgb(136, 136, 136);
+	font-size: 10px;
+	font-weight: 700;
+}
+.tagline a:hover {
+	text-decoration: underline;
 }
 .link-thumb {
 	width: 70px;
@@ -54,13 +68,20 @@
 		}
 	}
 }
-
+.author {
+	color: rgb(51, 102, 153) !important;
+	text-decoration: none;
+}
+.author:hover {
+	text-decoration: underline;
+}
 .link-title {
 	$link-active-bg: $focus-item;
 	@include activeState($link-active-bg);
-	font-weight: 600;
+	font-weight: 400;
 	font-size: 15px;
-	color: $black-blueish;
+	// color: $black-blueish;
+	color: rgb(0, 0, 255);
 	outline: 0;
 
 	@include on-theme(dark) {
@@ -96,8 +117,8 @@
 }
 
 .link-selected {
-	background-image: linear-gradient(#4286F5, #194FDB);
-
+	// background-image: linear-gradient(#4286F5, #194FDB);
+	background-image: linear-gradient(#0a3883, #c8c6d7);
 	@include on-theme(light) {
 		background: {
 			image: none;

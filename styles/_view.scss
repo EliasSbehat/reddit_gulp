@@ -16,7 +16,15 @@
 		top: 0;
 	}
 }
-
+.show-view.main-view{
+	width: 84% !important;
+}
+.detail-view{
+	display: none;
+}
+.show-view.detail-view{
+	display: block;
+}
 .main-view,
 .detail-view {
 	perspective: 1000;
