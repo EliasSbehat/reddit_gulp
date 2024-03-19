@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "browser-sync": "^3.0.2",
-    "gulp": "^3.8.11",
+    "gulp": "^4.0.0",
     "gulp-autoprefixer": "^2.1.0",
     "gulp-babel": "^5.1.0",
     "gulp-concat-util": "^0.5.2",
@@ -33,5 +33,9 @@
     "build": "gulp",
     "deploy": "git push",
     "deploy-beta": "surge . reeddit.surge.sh"
+  },
+  "dependencies": {
+    "gulp-sass": "^5.1.0",
+    "sass": "^1.72.0"
   }
 }

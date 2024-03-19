@@ -38,6 +38,20 @@ var Posts = (function () {
 						{{#data.stickied}}
 						<span class='link-label txt-bld stickied'>Stickied</span>
 						{{/data.stickied}}
+						<p class="tagline ">
+							submitted 
+							<time title="{{data.unix_time}}" class="live-timestamp">
+								{{data.time_ago}}
+							</time> by 
+							<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">
+							{{data.author}}
+							</a>
+							<span class="userattrs"></span>
+						</p>
+						<p class="tagline ">
+							<a href="{{data.url}}" data-event-action="comments" class="bylink comments may-blank" rel="nofollow">{{data.comments}}</a>
+							<a href="#">save</a>
+						</p>
 					</div>
 				</div>
 				<a href='#comments:{{data.id}}' class='to-comments w-15 flx flx-cntr-y btn-basic'>
@@ -122,6 +136,20 @@ var Posts = (function () {
 	};
 
 	var render = function (links, paging) { // links: API raw data
+		var modifiedLinks = links;
+		console.log(links);
+		var childrens = [];
+		for (var i=0;i<links.children.length;i++) {
+			var linkChild = links.children[i];
+			Object.assign(linkChild.data, {
+				time_ago: timeAgo(links.children[i].data.created_utc),
+				unix_time: unixTime(links.children[i].data.created_utc),
+				comments: (links.children[i].data.num_comments==1)?"comment":links.children[i].data.num_comments+" comments"
+			});
+			childrens.push(linkChild);
+		}
+		modifiedLinks.children = childrens;
+		console.log(modifiedLinks);
 		var linksCount = links.children.length,
 			main = UI.el.mainWrap;
 
@@ -150,7 +178,7 @@ var Posts = (function () {
 			}
 		} else {
 			// Add new links to the list
-			const compiledHTML = Mustache.to_html(template, links);
+			const compiledHTML = Mustache.to_html(template, modifiedLinks);
 			// http -> relative in post thumbnails
 			// searches and replaces 'url(http' to make sure it's only the thumbnail urls
 			const httpsHTML = compiledHTML.replace(/url\(http\:/g, 'url(');
@@ -210,12 +238,12 @@ var Posts = (function () {
 	};
 
 	var show = function (result, paging) {
-		const posts = result.data;
+		let posts = result.data;
 		loading = false;
 		idLast = posts.after;
 
-		render(posts, paging);
 		setList(posts);
+		render(posts, paging);
 
 		if (is.wideScreen) {
 			var id = Comments.getIdFromHash();
@@ -325,7 +353,37 @@ var Posts = (function () {
 			});
 		});
 	};
+	var timeAgo = function(utcTimestamp) {
+		var now = new Date().getTime();
+		var timeDifference = now - (utcTimestamp * 1000); //convert unix timestamp to milliseconds
+		var differenceInSeconds = Math.floor(timeDifference / 1000);
+	  
+		if (differenceInSeconds < 60) {
+		  return "Just now";
+		} else if ((differenceInSeconds / 60) < 60) {
+		  return Math.floor(differenceInSeconds / 60) + " minutes ago";
+		} else if ((differenceInSeconds / 3600) < 24) {
+		  return Math.floor(differenceInSeconds / 3600) + " hours ago";
+		} else {
+		  return Math.floor(differenceInSeconds / 86400) + " days ago";
+		}
+	};
+	var unixTime = function(unixTime) {
+		const date = new Date(unixTime * 1000);
 
+		const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+		const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+		const formattedDate =
+			dayNames[date.getUTCDay()] + ' ' +
+			monthNames[date.getUTCMonth()] + ' ' +
+			String(date.getUTCDate()).padStart(2, '0') + ' ' +
+			String(date.getUTCHours()).padStart(2, '0') + ':' +
+			String(date.getUTCMinutes()).padStart(2, '0') + ':' +
+			String(date.getUTCSeconds()).padStart(2, '0') + ' ' +
+			date.getUTCFullYear() + ' UTC';
+		return formattedDate;
+	};
 	// Exports
 	return {
 		initListeners: initListeners,
@@ -338,6 +396,8 @@ var Posts = (function () {
 		areLoading: areLoading,
 		getList: getList,
 		setList: setList,
+		timeAgo: timeAgo,
+		unixTime: unixTime,
 		getLoaded: getLoaded
 	};
 

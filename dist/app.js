@@ -1,5 +1,3 @@
-(function() {
-'use strict';
 /* global
  $,
  $$,
@@ -16,6 +14,8 @@
  wideScreenBP,
  largeScreenBP
  */
+
+"use strict";
 
 var UI = (function () {
 
@@ -349,7 +349,6 @@ var UI = (function () {
 		switchDisplay: switchDisplay
 	};
 })();
-
 /* global
  $,
  $$,
@@ -358,6 +357,8 @@ var UI = (function () {
  Modal,
  Store
  */
+
+'use strict';
 
 var Backup = (function () {
 
@@ -459,7 +460,6 @@ var Backup = (function () {
 		shouldUpdate: shouldUpdate
 	};
 })();
-
 /* global
  Posts,
  Subreddits,
@@ -473,6 +473,8 @@ var Backup = (function () {
  Mustache,
  URLs
  */
+
+"use strict";
 
 var Channels = (function () {
 
@@ -711,7 +713,6 @@ var Channels = (function () {
 		}
 	};
 })();
-
 /* global
  $,
  El,
@@ -728,6 +729,8 @@ var Channels = (function () {
  timeSince,
  URLs
  */
+
+'use strict';
 
 var Comments = (function () {
 
@@ -958,10 +961,11 @@ var Comments = (function () {
 		getIdFromHash: getIdFromHash
 	};
 })();
-
 /* global
  Store
  */
+
+'use strict';
 
 var CurrentSelection = (function () {
 
@@ -1030,11 +1034,12 @@ var CurrentSelection = (function () {
 		execute: execute
 	};
 })();
-
 /* global
  $,
  UI
  */
+
+'use strict';
 
 var Footer = (function () {
 
@@ -1071,7 +1076,6 @@ var Footer = (function () {
 		setPostTitle: setPostTitle
 	};
 })();
-
 /* global
  $,
  is,
@@ -1079,6 +1083,8 @@ var Footer = (function () {
  Posts,
  UI
  */
+
+'use strict';
 
 var Header = (function () {
 
@@ -1106,7 +1112,6 @@ var Header = (function () {
 		initListeners: initListeners
 	};
 })();
-
 /* global
  Posts,
  Mustache,
@@ -1117,6 +1122,8 @@ var Header = (function () {
  UI,
  Modal
  */
+
+"use strict";
 
 var LinkSummary = (function () {
 
@@ -1178,6 +1185,7 @@ var LinkSummary = (function () {
 		updatePostTime(data.created_utc);
 		Posts.getList()[postID].num_comments = data.num_comments;
 		Posts.getList()[postID].created_utc = data.created_utc;
+		console.log('------------------------');
 	};
 
 	var updatePostTime = function updatePostTime(time) {
@@ -1271,7 +1279,6 @@ var LinkSummary = (function () {
 		initListeners: initListeners
 	};
 })();
-
 /* global
  El,
  Channels,
@@ -1281,6 +1288,8 @@ var LinkSummary = (function () {
  is,
  CurrentSelection
  */
+
+'use strict';
 
 var Menu = (function () {
 
@@ -1419,13 +1428,14 @@ var Menu = (function () {
 		el: el
 	};
 })();
-
 /* global
  Menu,
  Anim,
  is,
  UI
  */
+
+'use strict';
 
 var Modal = (function () {
 
@@ -1522,7 +1532,6 @@ var Modal = (function () {
 		isShowing: isShowing
 	};
 })();
-
 /* global
  $,
  is,
@@ -1539,9 +1548,11 @@ var Modal = (function () {
  URLs
  */
 
+'use strict';
+
 var Posts = (function () {
 
-	var template = '\n\t\t{{#children}}\n\t\t\t<article class=\'link-wrap flx w-100\'>\n\t\t\t\t<div class=\'link flx no-ndrln pad-y pad-x js-link\' data-id=\'{{data.id}}\'>\n\t\t\t\t\t<div class=\'link-thumb\'>\n\t\t\t\t\t\t<div style=\'background-image: url({{data.thumbnail}})\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'link-info\'>\n\t\t\t\t\t\t<a href=\'{{data.url}}\'\n\t\t\t\t\t\t   data-id=\'{{data.id}}\'\n\t\t\t\t\t\t   target=\'_blank\'\n\t\t\t\t\t\t   class=\'link-title no-ndrln blck js-post-title\'>\n\t\t\t\t\t\t{{data.title}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<div class=\'link-domain\'>{{data.domain}}</div>\n\t\t\t\t\t\t<span class=\'link-sub\'>{{data.subreddit}}</span>\n\t\t\t\t\t\t{{#data.over_18}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld nsfw\'>NSFW</span>\n\t\t\t\t\t\t{{/data.over_18}}\n\t\t\t\t\t\t{{#data.stickied}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld stickied\'>Stickied</span>\n\t\t\t\t\t\t{{/data.stickied}}\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<a href=\'#comments:{{data.id}}\' class=\'to-comments w-15 flx flx-cntr-y btn-basic\'>\n\t\t\t\t\t<div class=\'comments-icon\'></div>\n\t\t\t\t</a>\n\t\t\t</article>\n\t\t{{/children}}\n\t\t<button id=\'btn-load-more-posts\'\n\t\t\t\tclass=\'btn blck mrgn-cntr-x\'>More</button>\n\t\t<div id=\'main-overflow\'></div>';
+	var template = '\n\t\t{{#children}}\n\t\t\t<article class=\'link-wrap flx w-100\'>\n\t\t\t\t<div class=\'link flx no-ndrln pad-y pad-x js-link\' data-id=\'{{data.id}}\'>\n\t\t\t\t\t<div class=\'link-thumb\'>\n\t\t\t\t\t\t<div style=\'background-image: url({{data.thumbnail}})\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'link-info\'>\n\t\t\t\t\t\t<a href=\'{{data.url}}\'\n\t\t\t\t\t\t   data-id=\'{{data.id}}\'\n\t\t\t\t\t\t   target=\'_blank\'\n\t\t\t\t\t\t   class=\'link-title no-ndrln blck js-post-title\'>\n\t\t\t\t\t\t{{data.title}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<div class=\'link-domain\'>{{data.domain}}</div>\n\t\t\t\t\t\t<span class=\'link-sub\'>{{data.subreddit}}</span>\n\t\t\t\t\t\t{{#data.over_18}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld nsfw\'>NSFW</span>\n\t\t\t\t\t\t{{/data.over_18}}\n\t\t\t\t\t\t{{#data.stickied}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld stickied\'>Stickied</span>\n\t\t\t\t\t\t{{/data.stickied}}\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\tsubmitted \n\t\t\t\t\t\t\t<time title="{{data.unix_time}}" class="live-timestamp">\n\t\t\t\t\t\t\t\t{{data.time_ago}}\n\t\t\t\t\t\t\t</time> by \n\t\t\t\t\t\t\t<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">\n\t\t\t\t\t\t\t{{data.author}}\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t<span class="userattrs"></span>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\t<a href="{{data.url}}" data-event-action="comments" class="bylink comments may-blank" rel="nofollow">{{data.comments}}</a>\n\t\t\t\t\t\t\t<a href="#">save</a>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<a href=\'#comments:{{data.id}}\' class=\'to-comments w-15 flx flx-cntr-y btn-basic\'>\n\t\t\t\t\t<div class=\'comments-icon\'></div>\n\t\t\t\t</a>\n\t\t\t</article>\n\t\t{{/children}}\n\t\t<button id=\'btn-load-more-posts\'\n\t\t\t\tclass=\'btn blck mrgn-cntr-x\'>More</button>\n\t\t<div id=\'main-overflow\'></div>';
 
 	var loading = false,
 	    list = {},
@@ -1623,6 +1634,20 @@ var Posts = (function () {
 
 	var render = function render(links, paging) {
 		// links: API raw data
+		var modifiedLinks = links;
+		console.log(links);
+		var childrens = [];
+		for (var i = 0; i < links.children.length; i++) {
+			var linkChild = links.children[i];
+			Object.assign(linkChild.data, {
+				time_ago: timeAgo(links.children[i].data.created_utc),
+				unix_time: unixTime(links.children[i].data.created_utc),
+				comments: links.children[i].data.num_comments == 1 ? "comment" : links.children[i].data.num_comments + " comments"
+			});
+			childrens.push(linkChild);
+		}
+		modifiedLinks.children = childrens;
+		console.log(modifiedLinks);
 		var linksCount = links.children.length,
 		    main = UI.el.mainWrap;
 
@@ -1646,7 +1671,7 @@ var Posts = (function () {
 			}
 		} else {
 			// Add new links to the list
-			var compiledHTML = Mustache.to_html(template, links);
+			var compiledHTML = Mustache.to_html(template, modifiedLinks);
 			// http -> relative in post thumbnails
 			// searches and replaces 'url(http' to make sure it's only the thumbnail urls
 			var httpsHTML = compiledHTML.replace(/url\(http\:/g, 'url(');
@@ -1657,8 +1682,8 @@ var Posts = (function () {
 
 			// Remove the thumbnail space if post has no thumbnail
 			// TODO: parse API json data to make this DOM manipulation not needed
-			for (var i = 0; i < thumbnails.length; i++) {
-				var thumbnail = $(thumbnails[i]);
+			for (var _i = 0; _i < thumbnails.length; _i++) {
+				var thumbnail = $(thumbnails[_i]);
 				var backgroundImageStyle = thumbnail.attr('style').replace("background-image: ", "");
 
 				if (backgroundImageStyle === 'url()' || backgroundImageStyle === 'url(default)' || backgroundImageStyle === 'url(nsfw)' || backgroundImageStyle === 'url(image)' || backgroundImageStyle === 'url(spoiler)' || backgroundImageStyle === 'url(self)') {
@@ -1706,8 +1731,8 @@ var Posts = (function () {
 		loading = false;
 		idLast = posts.after;
 
-		render(posts, paging);
 		setList(posts);
+		render(posts, paging);
 
 		if (is.wideScreen) {
 			var id = Comments.getIdFromHash();
@@ -1821,7 +1846,30 @@ var Posts = (function () {
 			});
 		});
 	};
+	var timeAgo = function timeAgo(utcTimestamp) {
+		var now = new Date().getTime();
+		var timeDifference = now - utcTimestamp * 1000; //convert unix timestamp to milliseconds
+		var differenceInSeconds = Math.floor(timeDifference / 1000);
 
+		if (differenceInSeconds < 60) {
+			return "Just now";
+		} else if (differenceInSeconds / 60 < 60) {
+			return Math.floor(differenceInSeconds / 60) + " minutes ago";
+		} else if (differenceInSeconds / 3600 < 24) {
+			return Math.floor(differenceInSeconds / 3600) + " hours ago";
+		} else {
+			return Math.floor(differenceInSeconds / 86400) + " days ago";
+		}
+	};
+	var unixTime = function unixTime(_unixTime) {
+		var date = new Date(_unixTime * 1000);
+
+		var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+		var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+		var formattedDate = dayNames[date.getUTCDay()] + ' ' + monthNames[date.getUTCMonth()] + ' ' + String(date.getUTCDate()).padStart(2, '0') + ' ' + String(date.getUTCHours()).padStart(2, '0') + ':' + String(date.getUTCMinutes()).padStart(2, '0') + ':' + String(date.getUTCSeconds()).padStart(2, '0') + ' ' + date.getUTCFullYear() + ' UTC';
+		return formattedDate;
+	};
 	// Exports
 	return {
 		initListeners: initListeners,
@@ -1834,14 +1882,17 @@ var Posts = (function () {
 		areLoading: areLoading,
 		getList: getList,
 		setList: setList,
+		timeAgo: timeAgo,
+		unixTime: unixTime,
 		getLoaded: getLoaded
 	};
 })();
-
 /* global
  Sorting,
  Posts,
  */
+
+'use strict';
 
 var SortSwitch = (function () {
 
@@ -1887,12 +1938,13 @@ var SortSwitch = (function () {
 		initListeners: initListeners
 	};
 })();
-
 /* global
  Menu,
  Posts,
  UI
  */
+
+'use strict';
 
 var Sorting = (function () {
 
@@ -1920,7 +1972,6 @@ var Sorting = (function () {
 		change: change
 	};
 })();
-
 /* global
  $,
  $$,
@@ -1941,6 +1992,8 @@ var Sorting = (function () {
  Sorting,
  URLs
  */
+
+"use strict";
 
 var Subreddits = (function () {
 
@@ -2271,12 +2324,13 @@ var Subreddits = (function () {
 		}
 	};
 })();
-
 /* global
  El,
  UI,
  is
  */
+
+"use strict";
 
 var Anim = (function () {
 
@@ -2347,6 +2401,7 @@ var Anim = (function () {
 		bounceInDown: bounceInDown
 	};
 })();
+"use strict";
 
 var $$ = {
 
@@ -2358,6 +2413,7 @@ var $$ = {
 		return document.querySelector(query);
 	}
 };
+"use strict";
 
 var wideScreenBP = window.matchMedia("(min-width: 1000px)");
 var largeScreenBP = window.matchMedia("(min-width: 490px)");
@@ -2389,15 +2445,17 @@ var is = (function () {
     iOS7: isiOS && iOSversion >= 7
   };
 })();
-
 /* global allCookies */
-var Store = window.fluid ? allCookies : window.localStorage;
+"use strict";
 
+var Store = window.fluid ? allCookies : window.localStorage;
 /* global
  Store,
  UI,
  is
  */
+
+'use strict';
 
 var ThemeSwitcher = (function () {
 
@@ -2483,13 +2541,13 @@ var ThemeSwitcher = (function () {
 		init: init
 	};
 })();
+'use strict';
 
 var URLs = {
   init: window.location.protocol + '//www.reddit.com/',
   end: '.json?jsonp=?',
   limitEnd: '.json?limit=30&jsonp=?'
 };
-
 /* global
  $$,
  Store,
@@ -2514,6 +2572,8 @@ var URLs = {
 */
 
 // Init all modules listeners
+'use strict';
+
 UI.initListeners();
 Posts.initListeners();
 Comments.initListeners();
@@ -2588,5 +2648,3 @@ if (is.mobile) {
 }
 
 FastClick.attach(document.body);
-
-})();
