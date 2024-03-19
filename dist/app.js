@@ -1127,7 +1127,7 @@ var Header = (function () {
 
 var LinkSummary = (function () {
 
-	var template = "\n\t\t<section id='link-summary'>\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
+	var template = "\n\t\t<section id='link-summary'>\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
 
 	var setPostSummary = function setPostSummary(data, postID) {
 		if (!data.link) {
@@ -1150,21 +1150,37 @@ var LinkSummary = (function () {
 			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
 		} else {
 			// if it's an image
-			console.log(Posts.getList()[postID]);
 			var linkURL = Posts.getList()[postID].url;
 			var imageURL = "";
 			if (Posts.getList()[postID].preview) {
 				imageURL = Posts.getList()[postID].preview.images[0].source.url;
 			}
 			var imageLink = checkImageLink(imageURL);
-			if (imageLink) {
-				// If it's an image link
-				summaryHTML += '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' + '<img class="image-preview" src="' + imageLink + '" />' + '</a>';
-			} else {
+
+			var isGallery = Posts.getList()[postID].is_gallery;
+			var gallery_data = Posts.getList()[postID].gallery_data;
+			var media_metadata = Posts.getList()[postID].media_metadata;
+			if (linkURL) {
 				// if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
 				if (youTubeID) {
-					summaryHTML += "<a class=\"preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"" + linkURL + "\" \n\t\t\t\t\t\t\t\ttarget=\"_blank\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>";
+					// summaryHTML +=
+					// 	`<a class="preview-container blck"
+					// 			href="${linkURL}"
+					// 			target="_blank">
+					// 	 <img class="video-preview"
+					// 	      src="//img.youtube.com/vi/${youTubeID}/hqdefault.jpg"/>
+					// 	 </a>`;
+					summaryHTML += "<iframe \n\t\t\t\t\t\t\twidth=\"560\" \n\t\t\t\t\t\t\theight=\"315\" \n\t\t\t\t\t\t\tsrc=\"https://www.youtube.com/embed/" + youTubeID + "?controls=1&autoplay=0\" \n\t\t\t\t\t\t\ttitle=\"YouTube video player\" \n\t\t\t\t\t\t\tframeborder=\"0\" \n\t\t\t\t\t\t\tstyle=\"display: block;margin: 0px auto;\"\n\t\t\t\t\t\t\tallow=\"accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" \n\t\t\t\t\t\t\tallowfullscreen>\n\t\t\t\t\t\t</iframe>";
+				} else if (isGallery) {
+					summaryHTML += '<div class="wrapper_gallery">';
+					for (var i = 0; i < gallery_data.items.length; i++) {
+						summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery\" alt=\"\">\n\t\t\t\t\t\t</div>";
+					}
+					summaryHTML += '</div>';
+				} else if (imageLink) {
+					// If it's an image link
+					summaryHTML += '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' + '<img class="image-preview" src="' + imageLink + '" />' + '</a>';
 				} else {
 					// if it's a Gfycat or RedGifs link
 					var gfycatID = getGfycatIDfromURL(linkURL);
@@ -1260,7 +1276,6 @@ var LinkSummary = (function () {
 			return '';
 		} else {
 			if (matching && matching.length > 1) {
-				console.log(matching[1]);
 				return matching[1];
 			} else {
 				return null;
@@ -1622,13 +1637,11 @@ var Posts = (function () {
 			success: function success(result) {
 				if (regex) {
 					var regexData = new RegExp(regex, 'i');
-					console.log(result);
 					var filteredPosts = result;
 					filteredPosts.data.children = result.data.children.filter(function (post) {
 						return regexData.test(post.data.title);
 					});
 					show(filteredPosts, paging);
-					console.log(filteredPosts, regex);
 				} else {
 					show(result, paging);
 				}
@@ -1649,7 +1662,6 @@ var Posts = (function () {
 	var render = function render(links, paging) {
 		// links: API raw data
 		var modifiedLinks = links;
-		console.log(links);
 		var childrens = [];
 		for (var i = 0; i < links.children.length; i++) {
 			var linkChild = links.children[i];
@@ -1661,7 +1673,6 @@ var Posts = (function () {
 			childrens.push(linkChild);
 		}
 		modifiedLinks.children = childrens;
-		console.log(modifiedLinks);
 		var linksCount = links.children.length,
 		    main = UI.el.mainWrap;
 
@@ -1757,7 +1768,6 @@ var Posts = (function () {
 	};
 
 	var setList = function setList(posts) {
-		console.log(posts);
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
 			if (list[post.data.id]) {
@@ -1779,6 +1789,9 @@ var Posts = (function () {
 					link: post.data.permalink,
 					author: post.data.author,
 					preview: post.data.preview,
+					is_gallery: post.data.is_gallery,
+					media_metadata: post.data.media_metadata,
+					gallery_data: post.data.gallery_data,
 					over_18: post.data.over_18,
 					stickied: post.data.stickied
 				};
@@ -1790,7 +1803,6 @@ var Posts = (function () {
 		if (Subreddits.isEditing()) {
 			return;
 		}
-		console.log(CurrentSelection, ',,');
 		CurrentSelection.execute(function () {
 			// if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {

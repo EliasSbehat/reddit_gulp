@@ -229,13 +229,16 @@
 }
 
 $gray-dark: #333;
-
+#summary-btn {
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
 #summary-footer {
 	display: flex;
 	justify-content: space-between;
 	padding-bottom: 10px;
 	padding-top: 2px;
-	border-bottom: 1px solid $gray-dark;
+	// border-bottom: 1px solid $gray-dark;
 
 	@include on-theme(light) {
 		border: 0;

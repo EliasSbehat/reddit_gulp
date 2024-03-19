@@ -30,10 +30,20 @@ var LinkSummary = (function() {
 			<div id='summary-footer'>
 				<span id='summary-author'
 					  class='pad-x txt-bld'>by {{author}}</span>
+			</div>
+			<div id='summary-preview'>
+			</div>
+			<div id='summary-btn'>
+				<a class='btn mrgn-x no-ndrln'
+					  id='share-tw'
+					  href='#'>Save</a>
 				<a class='btn mrgn-x no-ndrln'
 				   id='share-tw'
 				   target='_blank'
 				   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>
+				<a class='btn mrgn-x no-ndrln'
+				   id='share-tw'
+				   href='#'>Discard</a>
 			</div>
 			<div class='ls-extra flx flx-spc-btwn-x txt-bld'>
 				<span class='w-33'
@@ -67,28 +77,51 @@ var LinkSummary = (function() {
 			}
 			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
 		} else { // if it's an image
-			console.log(Posts.getList()[postID]);
 			var linkURL = Posts.getList()[postID].url;
 			var imageURL = "";
 			if (Posts.getList()[postID].preview) {
 				imageURL = Posts.getList()[postID].preview.images[0].source.url;
 			}
 			var imageLink = checkImageLink(imageURL);
-			if (imageLink) { // If it's an image link
-				summaryHTML +=
-					'<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
-					'<img class="image-preview" src="' + imageLink + '" />' +
-					'</a>';
-			} else { // if it's a YouTube video
+
+			var isGallery = Posts.getList()[postID].is_gallery;
+			var gallery_data = Posts.getList()[postID].gallery_data;
+			var media_metadata = Posts.getList()[postID].media_metadata;
+			if (linkURL) { // if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
 				if (youTubeID) {
+					// summaryHTML +=
+					// 	`<a class="preview-container blck" 
+					// 			href="${linkURL}" 
+					// 			target="_blank">
+					// 	 <img class="video-preview" 
+					// 	      src="//img.youtube.com/vi/${youTubeID}/hqdefault.jpg"/>
+					// 	 </a>`;
+					summaryHTML += 
+						`<iframe 
+							width="560" 
+							height="315" 
+							src="https://www.youtube.com/embed/${youTubeID}?controls=1&autoplay=0" 
+							title="YouTube video player" 
+							frameborder="0" 
+							style="display: block;margin: 0px auto;"
+							allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+							allowfullscreen>
+						</iframe>`;
+				} else if (isGallery) {
+					summaryHTML += '<div class="wrapper_gallery">';
+					for (var i=0;i<gallery_data.items.length;i++) {
+						summaryHTML += `
+						<div class="card_gallery">
+							<img src="${media_metadata[gallery_data.items[i].media_id].p[0].u}" class="cover_gallery" alt="">
+						</div>`;
+					}
+					summaryHTML += '</div>';
+				} else if (imageLink) { // If it's an image link
 					summaryHTML +=
-						`<a class="preview-container blck" 
-								href="${linkURL}" 
-								target="_blank">
-						 <img class="video-preview" 
-						      src="//img.youtube.com/vi/${youTubeID}/hqdefault.jpg"/>
-						 </a>`;
+						'<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
+						'<img class="image-preview" src="' + imageLink + '" />' +
+						'</a>';
 				} else { // if it's a Gfycat or RedGifs link
 					var gfycatID = getGfycatIDfromURL(linkURL);
 					var redGifsID = getRedGifsIDfromURL(linkURL);
@@ -186,7 +219,6 @@ var LinkSummary = (function() {
 			return '';
 		} else {
 			if (matching && matching.length > 1) {
-				console.log(matching[1]);
 				return matching[1];
 			} else {
 				return null;

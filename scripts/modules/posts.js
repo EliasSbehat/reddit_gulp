@@ -121,11 +121,9 @@ var Posts = (function () {
 			success: (result) => {
 				if (regex) {
 					var regexData = new RegExp(regex, 'i');
-					console.log(result);
 					let filteredPosts = result;
 					filteredPosts.data.children = result.data.children.filter(post => regexData.test(post.data.title));
 					show(filteredPosts, paging);
-					console.log(filteredPosts, regex);
 				} else {
 					show(result, paging);
 				}
@@ -145,7 +143,6 @@ var Posts = (function () {
 
 	var render = function (links, paging) { // links: API raw data
 		var modifiedLinks = links;
-		console.log(links);
 		var childrens = [];
 		for (var i=0;i<links.children.length;i++) {
 			var linkChild = links.children[i];
@@ -157,7 +154,6 @@ var Posts = (function () {
 			childrens.push(linkChild);
 		}
 		modifiedLinks.children = childrens;
-		console.log(modifiedLinks);
 		var linksCount = links.children.length,
 			main = UI.el.mainWrap;
 
@@ -262,7 +258,6 @@ var Posts = (function () {
 	};
 
 	var setList = function (posts) {
-		console.log(posts);
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
 			if (list[post.data.id]) { // if already cached
@@ -282,6 +277,9 @@ var Posts = (function () {
 					link: post.data.permalink,
 					author: post.data.author,
 					preview: post.data.preview,
+					is_gallery: post.data.is_gallery,
+					media_metadata: post.data.media_metadata,
+					gallery_data: post.data.gallery_data,
 					over_18: post.data.over_18,
 					stickied: post.data.stickied
 				};
@@ -293,7 +291,6 @@ var Posts = (function () {
 		if (Subreddits.isEditing()) {
 			return;
 		}
-		console.log(CurrentSelection, ',,');
 		CurrentSelection.execute(function () { // if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
 				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
