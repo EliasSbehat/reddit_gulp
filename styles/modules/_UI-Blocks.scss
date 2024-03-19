@@ -1,0 +1,156 @@
+// Color
+.clr-current {
+	color: currentColor;
+}
+
+.clr-white {
+	color: white;
+}
+
+// Display
+
+.blck {
+	display: block;
+}
+
+// Text
+
+.no-ndrln {
+	text-decoration: none;
+}
+
+.txt-bld {
+	font-weight: 700;
+}
+
+.txt-cntr {
+	text-align: center;
+}
+
+.txt-r {
+	text-align: right;
+}
+
+.txt-uppr {
+	text-transform: uppercase;
+}
+
+.txt-cap {
+	text-transform: capitalize;
+}
+
+.txt-ellps {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+// Layout
+
+.pad-x {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.pad-y {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.mrgn-x {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.mrgn-y {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.mrgn-cntr-x {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.no-mrgn {
+	margin: 0;
+}
+
+.no-pad {
+	padding: 0;
+}
+
+// Flex
+
+.flx {
+	display: flex;
+}
+
+@media (min-width: $bp-wide) {
+	.flx\@wide {
+		display: flex;
+	}
+}
+
+.flx-cntr-x {
+	justify-content: center;
+}
+
+.flx-cntr-y {
+	align-items: center;
+}
+
+.flx-spc-btwn-x {
+	justify-content: space-between;
+}
+
+// Width
+
+.w-15 {
+	width: 15%;
+}
+
+.w-33 {
+	width: 33.33%;
+}
+
+.w-50 {
+	width: 50%;
+}
+
+.w-85 {
+	width: 85%;
+}
+
+.w-100 {
+	width: 100%;
+}
+
+// Height
+
+.h-100 {
+	height: 100%;
+}
+
+// Other
+
+.invisible {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.hide {
+	display: none !important;
+}
+
+.centered-transform {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translateY(-50%) translateX(-50%);
+}
+
+.no-tch-cllt {
+	-webkit-touch-callout: none;
+}
+

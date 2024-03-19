@@ -1,0 +1,348 @@
+@import "themes";
+@import "globals/variables";
+@import "globals/helpers";
+@import "base";
+
+#comments-container {
+
+	@include break-point-min($bp-wide-x) {
+		width: 700px;
+		margin: 0 auto;
+	}
+
+	& > .comments-level > .comment-wrap {
+		border-left: 0;
+		padding-right: 10px;
+
+		> div:first-child {
+			padding: 10px 10px 0 10px;
+			margin: -10px -10px 0;
+			border-top: 1px solid #eee;
+
+			@include on-theme(dark) {
+				border-color: $dark-bg-color-1;
+			}
+		}
+	}
+
+	// Links
+	a[href$=".jpg"],
+	a[href$=".jpeg"],
+	a[href$=".png"],
+	a[href$=".gif"],
+	a[href$=".gifv"] {
+
+		&:before {
+			font-family: 'reeddit-icons';
+			content: "\e900";
+			margin-right: 3px;
+			speak: none;
+			font-style: normal;
+			font-weight: normal;
+			font-variant: normal;
+			text-transform: none;
+			line-height: 1;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+	}
+
+	a[href^="https://youtube.com"],
+	a[href^="http://youtube.com"],
+	a[href^="https://m.youtube.com"],
+	a[href^="http://m.youtube.com"],
+	a[href^="https://www.youtube.com"],
+	a[href^="http://www.youtube.com"],
+	a[href^="https://youtu.be"],
+	a[href^="http://youtu.be"],
+	a[href^="https://vimeo.com"],
+	a[href^="http://vimeo.com"] {
+
+		&:before {
+			font-family: 'reeddit-icons';
+			content: "\e901";
+			margin-right: 3px;
+			speak: none;
+			font-style: normal;
+			font-weight: normal;
+			font-variant: normal;
+			text-transform: none;
+			line-height: 1;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+	}
+}
+
+.comment-wrap {
+	user-select: text;
+	padding: 10px 0 10px 10px;
+	border-bottom: 1px solid #eee;
+	border-left: 1px solid #eee;
+	outline: none;
+
+	&:focus {
+		box-shadow: inset 2px 0 0 $active-bg;
+	}
+
+	@include on-theme(dark) {
+		border-color: $dark-bg-color-1;
+	}
+
+	@include break-point-min($bp-wide) {
+		font-size: 14px;
+	}
+}
+
+.comment-active {
+	box-shadow: inset 2px 0 0 $active-bg;
+}
+
+.comment-data {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.comment-author,
+.comment-poster {
+	color: $red-comments;
+	font-weight: 500;
+
+	@include on-theme(dark) {
+		font-weight: 400;
+		color: $dark-label-color-2;
+	}
+}
+
+.comment-poster {
+	position: relative;
+	padding-left: 28px;
+
+	&::before {
+		@include position(absolute, top-left);
+		content: 'OP';
+		color: $white;
+		background-color: $red-comments;
+		border: 1px solid $red-comments;
+		padding: 2px 3px;
+		border-radius: $corner-radius;
+		font-size: 10px;
+		font-weight: 700;
+	}
+}
+
+.comment-info {
+	color: #aaa;
+	font-weight: 500;
+
+	@include on-theme(dark) {
+		color: $dark-text-color-2;
+	}
+}
+
+.comment-body {
+	$color-body-text: $black-blueish;
+	font-size: 14px;
+
+	p {
+		margin: 10px 0;
+	}
+
+	ul,
+	ol,
+	p {
+		color: $color-body-text;
+
+		@include on-theme(dark) {
+			color: $dark-text-color-1;
+		}
+	}
+
+	a {
+		color: $c_comments-link;
+		-webkit-tap-highlight-color: rgba(darken($c_comments-link, 20%), .5);
+
+		&:visited {
+			color: $c_comments-link-visited;
+		}
+	}
+}
+
+#link-summary {
+	$gray-dark: #4d4d4d;
+	background-color: $gray-dark;
+	padding: 10px 0 0;
+
+	@include on-theme(light) {
+		background-color: $light-bg-color-1;
+	}
+
+	@include on-theme(dark) {
+		background-color: $dark-bg-color-1;
+	}
+
+	> a { // Title/Main Link
+		@include activeState($active-bg);
+	}
+}
+
+#summary-title {
+	font-size: 16px;
+	color: white;
+	padding-bottom: 2px;
+	background-color: inherit;
+
+	@include on-theme(light) {
+		color: $black;
+	}
+
+	@include on-theme(dark) {
+		color: $dark-text-color-1;
+	}
+}
+
+#summary-domain {
+	color: #F75433;
+	font-size: 13px;
+	display: inline;
+
+	@include on-theme(light) {
+		color: $red;
+	}
+
+	@include on-theme(dark) {
+		color: $dark-label-color-1;
+	}
+}
+
+#summary-author {
+	color: #E2E2E0;
+
+	@include on-theme(light) {
+		color: $light-text-color;
+	}
+
+	@include on-theme(dark) {
+		color: $dark-text-color-2;
+	}
+}
+
+$gray-dark: #333;
+
+#summary-footer {
+	display: flex;
+	justify-content: space-between;
+	padding-bottom: 10px;
+	padding-top: 2px;
+	border-bottom: 1px solid $gray-dark;
+
+	@include on-theme(light) {
+		border: 0;
+	}
+}
+
+.ls-extra {
+	background-color: $gray-dark;
+	padding: 4px 10px;
+	width: 100%;
+	border-top: 1px solid #5d5d5d;
+	color: white;
+
+	@include on-theme(light) {
+		background-color: $light-bg-color-2;
+		border: 0;
+		color: $light-text-color;
+	}
+
+	@include on-theme(dark) {
+		background-color: $dark-bg-color-3;
+		border: 0;
+		color: $dark-text-color-1;
+	}
+}
+
+#selftext {
+	$silver: #e6e6e6;
+	$gray: #b9b9b9;
+	user-select: text;
+	border-radius: 5px;
+	background-color: $silver;
+	box-shadow: inset 0 1px 1px #FFF, 0 0 7px rgba(0, 0, 0, 0.3);
+	border: 1px solid $gray;
+	font-size: 14px;
+
+	@include on-theme(light-n-dark) {
+		border: 0;
+		box-shadow: none;
+	}
+
+	@include on-theme(dark) {
+		color: $dark-text-color-1;
+		background-color: $dark-active-color-2;
+	}
+
+	p {
+		margin-top: 5px;
+
+		&:last-child {
+			margin-bottom: 5px;
+		}
+
+		@include break-point-min($bp-wide) {
+			font-size: 14px;
+		}
+	}
+
+	a {
+		color: $c_comments-link;
+		-webkit-tap-highlight-color: rgba(darken($c_comments-link, 20%), .5);
+
+		&:visited {
+			color: $c_comments-link-visited;
+		}
+	}
+}
+
+.preview-container {
+	margin: $gutter 0;
+	outline: none;
+
+	&:focus {
+
+		.image-preview,
+		.video-preview {
+			outline: 3px solid $active-bg;
+		}
+	}
+
+	@include break-point-min($bp-large) {
+		margin: $gutter;
+	}
+}
+
+.image-preview,
+.video-preview {
+	max-width: 100%;
+	margin: 0 auto;
+	display: block;
+	box-shadow: 0 1px 3px #333;
+}
+
+.image-preview {
+	cursor: zoom-in;
+
+	@include break-point-min($bp-large) {
+		border-radius: $corner-radius;
+	}
+}
+
+.image-viewer {
+	max-width: 100%;
+	max-height: 100%;
+	padding: $gutter 0;
+
+	@include break-point-min($bp-large) {
+		padding: $gutter;
+	}
+}

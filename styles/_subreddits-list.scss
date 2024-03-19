@@ -1,0 +1,78 @@
+@import "themes";
+@import "mixins";
+
+.sub-to-add {
+	$spacing: 10px;
+	border-bottom: 1px solid #CCC;
+	border-top: 1px solid white;
+	padding: $spacing 0 $spacing $spacing;
+
+	@include on-theme(light) {
+		border-top: 0;
+	}
+
+	@include on-theme(dark) {
+		border-top: none;
+		border-bottom-color: $dark-line-color-1;
+	}
+
+	&__title {
+		font-size: 15px;
+		margin: 5px 0;
+		color: $red;
+
+		@include on-theme(dark) {
+			color: $dark-label-color-2;
+		}
+	}
+
+	&__description {
+		margin: 5px 0;
+
+		@include on-theme(dark) {
+			color: $dark-text-color-1;
+		}
+	}
+}
+
+.item-to-edit {
+	border-bottom: 1px solid #DDD;
+	border-top: 1px solid white;
+	height: 60px;
+	color: $black;
+
+	@include on-theme(light-n-dark) {
+		border-top: 0;
+	}
+
+	@include on-theme(dark) {
+		border-bottom-color: $dark-line-color-1;
+		color: $dark-text-color-2;
+	}
+
+	.sub-name {
+		font-size: 16px;
+		padding-left: 10px;
+
+		@include on-theme(dark) {
+			color: $dark-text-color-1;
+		}
+	}
+
+	.channel-name {
+		width: 70%;
+	}
+}
+
+.edit-subs-title {
+	font-size: 19px;
+	color: #777;
+	background-color: rgba(220, 220, 220, 0.4);
+	text-shadow: 0 1px 1px whiteSmoke;
+
+	@include on-theme(dark) {
+		background-color: $dark-bg-color-1;
+		color: $dark-text-color-1;
+		text-shadow: none;
+	}
+}

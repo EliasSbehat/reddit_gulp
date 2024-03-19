@@ -1,0 +1,17 @@
+CACHE MANIFEST
+
+# v2.2.0 20-11-2015
+
+# stylesheets
+dist/app.min.css
+
+# images
+/img/alienHead.png
+/img/comment_24.png
+
+# javascript
+dist/libs.js
+dist/app.min.js
+
+NETWORK:
+*

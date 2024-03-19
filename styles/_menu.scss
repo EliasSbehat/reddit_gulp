@@ -1,0 +1,263 @@
+@import "themes";
+@import "globals/variables";
+@import "globals/helpers";
+@import "base";
+
+#subs,
+#channels {
+  padding: 0;
+  margin: 0;
+  cursor: default;
+}
+
+#edit-subs {
+    position: fixed;
+    bottom: 0;
+    width: 140px;
+    background-color: $black;
+    z-index: 1;
+    height: $footer-height;
+    border-top: 1px solid rgba(0, 0, 0, .5);
+    box-shadow: rgba(255, 255, 255, 0.1) 0 1px 0 inset;
+    text-align: center;
+    display: flex;
+    align-items: center;
+
+	@include on-theme(light) {
+        $border-color: #b3b3b3;
+        background-image: linear-gradient(#d5d5d5, #b3b3b3);
+        border-top: 1px solid $border-color;
+        border-right: 1px solid $border-color;
+	}
+
+    @include on-theme(light-iOS7) {
+        border: none;
+        background: {
+            color: $light-bg-color-2;
+            image: none;
+        };
+    }
+
+	@include on-theme(dark) {
+		background-color: $dark-bg-color-3;
+	}
+}
+
+.btn-edit-sub {
+    font-size: 25px;
+    color: #777;
+    -webkit-touch-callout: none;
+
+    &:hover {
+        color: #4286F5;
+    }
+
+    @include on-theme(light) {
+        color: #444;
+    }
+
+	@include on-theme(dark) {
+		color: $dark-text-color-2;
+	}
+}
+
+#btn-edit-subs {
+    font-size: 20px;
+}
+
+.sub {
+    color: white;
+    font-size: 14px;
+    -webkit-touch-callout: none;
+
+    &:hover {
+        text-shadow: 0 0 10px #CCC;
+    }
+
+    @include on-theme(light) {
+        color: $light-text-color;
+    }
+
+	@include on-theme(dark) {
+		color: $dark-text-color-1;
+	}
+
+    &--selected {
+        text-shadow: 0 0 10px #ccc;
+        border-left: 3px solid #4286f5;
+
+        @include on-theme(light) {
+            border: 0;
+            text-shadow: none;
+            background-color: $light-active-item;
+            color: $white;
+        }
+
+		@include on-theme(dark) {
+			border-color: $dark-active-color-1;
+		}
+    }
+}
+
+.channel {
+    $spacing-y: 5px;
+	font-size: 14px;
+	padding-top: $spacing-y;
+    padding-bottom: $spacing-y;
+    color: white;
+    -webkit-touch-callout: none;
+
+    @include on-theme(light) {
+        color: $light-text-color;
+    }
+
+	@include on-theme(dark) {
+		color: $dark-text-color-1;
+	}
+
+    &__sub {
+        font-size: 11px;
+        color: #bbb;
+        margin-top: $spacing-y;
+        margin-bottom: $spacing-y;
+        letter-spacing: 1px;
+
+		@include on-theme(light) {
+			color: lighten($light-text-color, 10%);
+		}
+
+		@include on-theme(dark) {
+			color: $dark-text-color-2;
+		}
+    }
+
+	&--selected {
+		border-left: 3px solid #4286F5;
+
+		@include on-theme(light) {
+			border-color: $light-active-item;
+		}
+
+		@include on-theme(dark) {
+			border-color: $dark-active-color-1;
+		}
+	}
+}
+
+.btn-side-menu-add {
+	position: absolute;
+	right: 0;
+	color: #777;
+	font-size: 24px;
+	line-height: 30px;
+	width: 40px;
+	height: 100%;
+    -webkit-touch-callout: none;
+
+	@include on-theme(dark) {
+		color: $dark-text-color-2;
+	}
+}
+
+#menu-container {
+    overflow-y: auto;
+	overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: absolute;
+    width: 140px;
+    z-index: 0;
+    height: 100%;
+    background-color: #363636;
+
+    @include on-theme(light) {
+        border-right: 1px solid #d3d3d3;
+        background-color: $light-bg-color-1;
+    }
+
+	@include on-theme(dark) {
+		border-right: 1px solid $dark-line-color-2;
+		background-color: $dark-bg-color-1;
+	}
+}
+
+#menu-container,
+#edit-subs {
+
+    @include break-point-min($bp-large) {
+        width: $menu-view-large;
+    }
+
+    @include break-point-min($bp-large-x) {
+        width: $menu-view-large-x;
+    }
+
+    @include break-point-min($bp-wide) {
+        width: $menu-view-wide;
+    }
+
+    @include break-point-min($bp-wide-x) {
+        width: $menu-view-wide-x;
+    }
+}
+
+#main-menu {
+    box-shadow: inset -3px 0 10px black;
+    height: calc(100% - #{$footer-height});
+
+    @include on-theme(light-n-dark) {
+        box-shadow: none;
+    }
+}
+
+.menu-desc {
+    $height: 35px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 12px;
+    text-shadow: rgba(0, 0, 0, 0.7) 0 1px 0;
+    height: $height;
+    line-height: $height;
+    background: rgba(0, 0, 0, 0.20);
+    border-top: 1px solid #111;
+    border-bottom: 1px solid #111;
+    box-shadow: rgba(255, 255, 255, 0.1) 0 1px 0, rgba(255, 255, 255, 0.1) 0 1px 0 inset;
+    cursor: default;
+    position: relative;
+
+    @include on-theme(light) {
+        background-color: $light-bg-color-2;
+        border: 0;
+        text-shadow: none;
+        font-weight: 600;
+        color: $light-text-color;
+    }
+
+	@include on-theme(dark) {
+		color: $dark-text-color-1;
+	}
+}
+
+.option {
+    color: whiteSmoke;
+    letter-spacing: 1px;
+    font-size: 14px;
+    -webkit-touch-callout: none;
+
+    @include on-theme(light) {
+        color: $light-text-color;
+    }
+
+	@include on-theme(dark) {
+		color: $dark-text-color-1;
+	}
+
+    &:last-child {
+		margin-bottom: 15px;
+	}
+}
+
+.sub,
+.channel,
+.option {
+    @include activeState($active-bg);
+    transition-duration: 200ms;
+}

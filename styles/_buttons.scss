@@ -1,0 +1,118 @@
+@import "themes";
+@import "mixins";
+
+button {
+	font-family: inherit;
+}
+
+$black:      #444444;
+$gray:       #888888;
+$gray-light: #bbbbbb;
+$whitetish:  #eeeeee;
+
+.btn {
+	color: $black;
+	background-image: linear-gradient(0deg, $gray-light, $whitetish);
+	border: 1px solid $gray-light;
+	border-radius: 4px;
+	box-shadow: inset 0 1px 0 white,
+				inset 0px -1px 0 #aaa;
+	padding: 2px 4px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 700;
+
+  &:focus {
+    background-image: linear-gradient(0deg, darken($gray-light, 10%), darken($whitetish, 10%)); 
+  }
+
+	&:active {
+		background-color: $gray-light;
+		background-image: none;
+		box-shadow: inset 0 1px 0 $gray;
+	}
+
+	@include on-theme(light) {
+		background-image: none;
+		background-color: $whitetish;
+		box-shadow: none;
+
+		&:focus {
+			background-color: darken($whitetish, 9%);
+		}
+
+		&:active {
+			background-color: darken($whitetish, 15%);
+		}
+	}
+
+	@include on-theme(dark) {
+		background-image: none;
+		background-color: $dark-button-bg;
+		color: $dark-button-text;
+		border-color: $dark-bg-color-1;
+		box-shadow: none;
+
+		&:focus {
+			background-color: lighten($dark-button-bg, 7%);
+		}
+
+		&:active {
+			background-color: lighten($dark-button-bg, 9%);
+		}
+	}
+}
+
+.btn-basic { // TODO: Better abstraction
+
+	&:active {
+		background-color: #ddd;
+
+		@include on-theme(light) {
+			background-color: #ccc;
+		}
+
+		@include on-theme(dark) {
+			background-color: $dark-bg-color-3;
+		}
+	}
+}
+
+#btn-add-another-sub {
+    background-color: #CCC;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding: 8px 15px;
+    font-size: 15px;
+    color: #FFF;
+    border: 1px solid #aaa;
+    border-top: 0;
+}
+
+.comments-button {
+	font-size: 11px;
+	width: 90px;
+}
+
+#btn-load-more-posts {
+	font-size: 14px;
+	width: 80%;
+}
+
+#btn-more-subs,
+#btn-load-more-posts {
+	margin: {
+		top: 20px;
+		bottom: 20px;
+	};
+}
+
+.group-btn {
+	&:first-child {
+		border-radius: 4px 0 0 4px;
+	}
+
+	&:last-child {
+		border-radius: 0 4px 4px 0;
+	}
+}

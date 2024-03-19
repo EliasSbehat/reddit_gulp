@@ -1,0 +1,50 @@
+// vars
+$header-height: 44px;
+$footer-height: 32px;
+
+// Colors
+$white:         #ffffff;
+$black:         #333333;
+$red:           #c6544f;
+$blue-grayish:  #7a9abd;
+$black-blueish: #3d525e;
+
+$red-comments:            $red;
+$c_comments-link:         $blue-grayish;
+$c_comments-link-visited: #a3adce;
+$col_active-link-subtext: #add0eb;
+
+$gutter: 10px;
+
+$corner-radius: 3px;
+
+// Z-Indexes
+$z-view:    1;
+$z-options: 2;
+
+// Media Query Break Points
+$bp-small:   350px;
+$bp-large:   490px;
+$bp-large-x: 760px;
+$bp-wide:    1000px;
+$bp-wide-x:  1430px;
+
+// Views width
+$main-view-large:     72%;
+$detail-view-large:   $main-view-large;
+$menu-view-large:     100% - $main-view-large;
+
+$main-view-large-x:   78%;
+$detail-view-large-x: $main-view-large-x;
+$menu-view-large-x:   100% - $main-view-large-x;
+
+$main-view-wide:      34%;
+$detail-view-wide:    50%;
+$menu-view-wide:      16%;
+
+$main-view-wide-x:    487px;
+$menu-view-wide-x:    230px;
+$detail-view-wide-x:  calc(100% - #{($menu-view-wide-x + $main-view-wide-x)});
+
+@import "mixins";
+

@@ -1,0 +1,123 @@
+@import "themes";
+@import "mixins";
+
+header {
+	@include size(100%, 44px);
+	display: flex;
+	align-content: center;
+	top: 0;
+	position: fixed;
+	z-index: 2;
+	border-bottom: 1px solid #777;
+	border-top: 1px solid white;
+	color: $black;
+	background-color: $light-bar-color;
+	text-shadow: 0 1px 1px whiteSmoke;
+	box-shadow: 0 -25px 24px -10px rgba(0, 0, 0, .3) inset;
+
+	@include on-theme(light) {
+		border-bottom: 1px solid #bbb;
+		border-top: 0;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+	}
+
+	@include on-theme(dark) {
+		background-color: $dark-bg-color-1;
+		border: none;
+		color: $dark-text-color-2;
+		text-shadow: none;
+	}
+
+	@include break-point-min($bp-wide) {
+		display: none;
+	}
+}
+
+.header-corner {
+	transition-duration: 300ms;
+}
+
+#title-head {
+	width: 70%;
+}
+
+#title {
+	font-size: 20px;
+	line-height: $header-height;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	cursor: default;
+}
+
+#header-icon {
+	@include size(36px, $header-height);
+	background-image: url('../img/alienHead.png');
+	background-size: 36px;
+	background-repeat: no-repeat;
+	background-position: 50%;
+	margin: 0 auto;
+
+	@include on-theme(light) {
+		opacity: .6;
+	}
+
+	@include on-theme(dark) {
+		background-image: url('../img/alien-dark.png');
+	}
+}
+
+#main-title {
+	transition-duration: 300ms;
+	position: fixed;
+	width: 40%;
+	font-size: 15px;
+	top: 12px;
+	cursor: default;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+
+	@include on-theme(light) {
+		top: 0;
+	}
+}
+
+.sub-title {
+	margin: 0 0 0 5px;
+	padding: 0 5px;
+	border-radius: 5px;
+
+	&:active {
+		background-color: rgba(0, 0, 0, .3);
+	}
+
+	@include on-theme(light) {
+		margin: 0;
+		padding: 0 10px;
+		line-height: $header-height;
+		text-shadow: none;
+		border-radius: 0;
+	}
+
+	@include break-point-min($bp-large) {
+		pointer-events: none;
+	}
+}
+
+.back-arrow-btn {
+	@include size(100%, $header-height);
+}
+
+.back-arrow-icon {
+	$arrow-size: 12px;
+	@include size(0);
+	// Icon Shape
+	border-bottom: ($arrow-size / 2) solid transparent;
+	border-right: $arrow-size solid $black;
+	border-top: ($arrow-size / 2) solid transparent;
+
+	@include on-theme(dark) {
+		border-right-color: $dark-text-color-2;
+	}
+}

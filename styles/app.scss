@@ -1,0 +1,49 @@
+@import 'base';
+@import 'themes';
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+	font-size: 13px;
+	user-select: none;
+    margin: 0;
+    padding: 0;
+    word-wrap: break-word;
+    text-size-adjust: none;
+    font-family: -apple-system-font, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    position: relative;
+	-webkit-tap-highlight-color: transparent;
+
+	&.dark {
+		background-color: $dark-bg-color-2;
+	}
+}
+
+@import 'icons';
+@import 'view';
+@import 'buttons';
+@import 'menu';
+@import 'link';
+@import 'header';
+@import 'post-comments';
+@import 'options-menu';
+@import 'sort-switch';
+@import 'subreddits-list';
+@import "components/about-window";
+@import "components/modal";
+@import "components/forms";
+
+.from-swipe { // for iPhone iOS 7+ "hack"
+	transition-duration: 0s !important;
+}
+
+@import 'animations';
+@import 'footer';
+@import 'modules/UI-Blocks';
