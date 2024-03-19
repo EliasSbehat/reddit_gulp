@@ -153,7 +153,7 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function (sub) {
-		let results = defaults.filter(item => item.subreddit.toLowerCase() === sub.toLowerCase());
+		let results = list.filter(item => item.subreddit.toLowerCase() === sub.toLowerCase());
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;
 			if (sub.toLowerCase() === 'frontpage') {
@@ -161,15 +161,17 @@ var Subreddits = (function () {
 			} else {
 				url = URLs.init + "r/" + sub + "/";
 			}
-			console.log(url);
-			Posts.load(url, "", results[0].regex);
+			if (results.length>0) {
+				Posts.load(url, "", results[0].regex);
+			} else {
+				Posts.load(url, "", "");
+			}
 			CurrentSelection.setSubreddit(sub);
 		}
 		UI.setSubTitle(sub);
 	};
 
 	var remove = function (sub) {
-		console.log(sub);
 		_delete(sub);
 		detach(sub);
 		if (CurrentSelection.getType() === CurrentSelection.Types.SUB &&
@@ -266,22 +268,22 @@ var Subreddits = (function () {
 			url: URLs.init + "r/" + subName + "/" + Sorting.get() + URLs.limitEnd,
 			dataType: 'jsonp',
 			success: function (data) {
-				// if (txtReg) {
-				// 	var regexData = new RegExp(txtReg, 'i');
-				// 	let filteredPosts = data;
-				// 	filteredPosts.data.children = data.data.children.filter(post => regexData.test(post.data.title));
-				// 	Posts.loadFromManualInput(filteredPosts);
-				// } else {
-				// 	Posts.loadFromManualInput(data);
-				// }
-				// UI.setSubTitle(subName);
-				// CurrentSelection.setSubreddit(subName);
+				if (txtReg) {
+					var regexData = new RegExp(txtReg, 'i');
+					let filteredPosts = data;
+					filteredPosts.data.children = data.data.children.filter(post => regexData.test(post.data.title));
+					Posts.loadFromManualInput(filteredPosts);
+				} else {
+					Posts.loadFromManualInput(data);
+				}
+				UI.setSubTitle(subName);
+				CurrentSelection.setSubreddit(subName);
 				// add(subName, txtReg);
 				update(subName, txtReg);
-				// Menu.markSelected({
-				// 	name: subName,
-				// 	update: true
-				// });
+				Menu.markSelected({
+					name: subName,
+					update: true
+				});
 			},
 			error: function () {
 				alert('Oh, the subreddit you entered is not valid...');
@@ -393,7 +395,7 @@ var Subreddits = (function () {
 		});
 		UI.el.mainWrap.on('click', '.btn-edit-sub', function() {
 			var originalSubreddit = $(this).attr('rid');
-			var originalResult = defaults.filter(item => item.subreddit.toLowerCase() === originalSubreddit.toLowerCase());
+			var originalResult = list.filter(item => item.subreddit.toLowerCase() === originalSubreddit.toLowerCase());
 			var originalRegex = originalResult[0].regex;
 			Modal.show(template.formUpdate);
 			setTimeout(function() {

@@ -1150,8 +1150,13 @@ var LinkSummary = (function () {
 			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
 		} else {
 			// if it's an image
+			console.log(Posts.getList()[postID]);
 			var linkURL = Posts.getList()[postID].url;
-			var imageLink = checkImageLink(linkURL);
+			var imageURL = "";
+			if (Posts.getList()[postID].preview) {
+				imageURL = Posts.getList()[postID].preview.images[0].source.url;
+			}
+			var imageLink = checkImageLink(imageURL);
 			if (imageLink) {
 				// If it's an image link
 				summaryHTML += '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' + '<img class="image-preview" src="' + imageLink + '" />' + '</a>';
@@ -1752,6 +1757,7 @@ var Posts = (function () {
 	};
 
 	var setList = function setList(posts) {
+		console.log(posts);
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
 			if (list[post.data.id]) {
@@ -1772,6 +1778,7 @@ var Posts = (function () {
 					self: post.data.is_self,
 					link: post.data.permalink,
 					author: post.data.author,
+					preview: post.data.preview,
 					over_18: post.data.over_18,
 					stickied: post.data.stickied
 				};
@@ -2137,7 +2144,7 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function loadPosts(sub) {
-		var results = defaults.filter(function (item) {
+		var results = list.filter(function (item) {
 			return item.subreddit.toLowerCase() === sub.toLowerCase();
 		});
 		if (sub !== CurrentSelection.getName() || editing) {
@@ -2147,15 +2154,17 @@ var Subreddits = (function () {
 			} else {
 				url = URLs.init + "r/" + sub + "/";
 			}
-			console.log(url);
-			Posts.load(url, "", results[0].regex);
+			if (results.length > 0) {
+				Posts.load(url, "", results[0].regex);
+			} else {
+				Posts.load(url, "", "");
+			}
 			CurrentSelection.setSubreddit(sub);
 		}
 		UI.setSubTitle(sub);
 	};
 
 	var remove = function remove(sub) {
-		console.log(sub);
 		_delete(sub);
 		detach(sub);
 		if (CurrentSelection.getType() === CurrentSelection.Types.SUB && CurrentSelection.getName() === sub) {
@@ -2254,22 +2263,24 @@ var Subreddits = (function () {
 			url: URLs.init + "r/" + subName + "/" + Sorting.get() + URLs.limitEnd,
 			dataType: 'jsonp',
 			success: function success(data) {
-				// if (txtReg) {
-				// 	var regexData = new RegExp(txtReg, 'i');
-				// 	let filteredPosts = data;
-				// 	filteredPosts.data.children = data.data.children.filter(post => regexData.test(post.data.title));
-				// 	Posts.loadFromManualInput(filteredPosts);
-				// } else {
-				// 	Posts.loadFromManualInput(data);
-				// }
-				// UI.setSubTitle(subName);
-				// CurrentSelection.setSubreddit(subName);
+				if (txtReg) {
+					var regexData = new RegExp(txtReg, 'i');
+					var filteredPosts = data;
+					filteredPosts.data.children = data.data.children.filter(function (post) {
+						return regexData.test(post.data.title);
+					});
+					Posts.loadFromManualInput(filteredPosts);
+				} else {
+					Posts.loadFromManualInput(data);
+				}
+				UI.setSubTitle(subName);
+				CurrentSelection.setSubreddit(subName);
 				// add(subName, txtReg);
 				update(subName, txtReg);
-				// Menu.markSelected({
-				// 	name: subName,
-				// 	update: true
-				// });
+				Menu.markSelected({
+					name: subName,
+					update: true
+				});
 			},
 			error: function error() {
 				alert('Oh, the subreddit you entered is not valid...');
@@ -2381,7 +2392,7 @@ var Subreddits = (function () {
 		});
 		UI.el.mainWrap.on('click', '.btn-edit-sub', function () {
 			var originalSubreddit = $(this).attr('rid');
-			var originalResult = defaults.filter(function (item) {
+			var originalResult = list.filter(function (item) {
 				return item.subreddit.toLowerCase() === originalSubreddit.toLowerCase();
 			});
 			var originalRegex = originalResult[0].regex;

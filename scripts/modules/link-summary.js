@@ -67,8 +67,13 @@ var LinkSummary = (function() {
 			}
 			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
 		} else { // if it's an image
+			console.log(Posts.getList()[postID]);
 			var linkURL = Posts.getList()[postID].url;
-			var imageLink = checkImageLink(linkURL);
+			var imageURL = "";
+			if (Posts.getList()[postID].preview) {
+				imageURL = Posts.getList()[postID].preview.images[0].source.url;
+			}
+			var imageLink = checkImageLink(imageURL);
 			if (imageLink) { // If it's an image link
 				summaryHTML +=
 					'<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +

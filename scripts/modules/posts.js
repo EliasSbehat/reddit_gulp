@@ -262,6 +262,7 @@ var Posts = (function () {
 	};
 
 	var setList = function (posts) {
+		console.log(posts);
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
 			if (list[post.data.id]) { // if already cached
@@ -280,6 +281,7 @@ var Posts = (function () {
 					self: post.data.is_self,
 					link: post.data.permalink,
 					author: post.data.author,
+					preview: post.data.preview,
 					over_18: post.data.over_18,
 					stickied: post.data.stickied
 				};
