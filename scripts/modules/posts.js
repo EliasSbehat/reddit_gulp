@@ -292,11 +292,11 @@ var Posts = (function () {
 			return;
 		}
 		CurrentSelection.execute(function () { // if it's subreddit
-			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
-			} else {
+			// if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
+			// 	load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+			// } else {
 				load(URLs.init + "r/" + CurrentSelection.getName() + "/");
-			}
+			// }
 		}, function () { // if it's channel
 			Channels.loadPosts(Channels.getByName(CurrentSelection.getName()));
 		});
@@ -349,11 +349,11 @@ var Posts = (function () {
 		UI.el.mainWrap.on('click', '#btn-load-more-posts', function () {
 			CurrentSelection.execute(function () {
 				var url;
-				if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-					url = URLs.init + 'r/' + Subreddits.getAllSubsString() + '/';
-				} else {
+				// if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
+				// 	url = URLs.init + 'r/' + Subreddits.getAllSubsString() + '/';
+				// } else {
 					url = URLs.init + 'r/' + CurrentSelection.getName() + '/';
-				}
+				// }
 				load(url, '&after=' + idLast);
 			}, function () {
 				var channel = Channels.getByName(CurrentSelection.getName());

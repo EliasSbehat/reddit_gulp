@@ -156,11 +156,11 @@ var Subreddits = (function () {
 		let results = list.filter(item => item.subreddit.toLowerCase() === sub.toLowerCase());
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;
-			if (sub.toLowerCase() === 'frontpage') {
-				url = URLs.init + "r/" + getAllSubsString() + "/";
-			} else {
+			// if (sub.toLowerCase() === 'frontpage') {
+			// 	url = URLs.init + "r/" + getAllSubsString() + "/";
+			// } else {
 				url = URLs.init + "r/" + sub + "/";
-			}
+			// }
 			if (results.length>0) {
 				Posts.load(url, "", results[0].regex);
 			} else {

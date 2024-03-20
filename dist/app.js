@@ -1812,11 +1812,11 @@ var Posts = (function () {
 		}
 		CurrentSelection.execute(function () {
 			// if it's subreddit
-			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
-			} else {
-				load(URLs.init + "r/" + CurrentSelection.getName() + "/");
-			}
+			// if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
+			// 	load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+			// } else {
+			load(URLs.init + "r/" + CurrentSelection.getName() + "/");
+			// }
 		}, function () {
 			// if it's channel
 			Channels.loadPosts(Channels.getByName(CurrentSelection.getName()));
@@ -1870,11 +1870,11 @@ var Posts = (function () {
 		UI.el.mainWrap.on('click', '#btn-load-more-posts', function () {
 			CurrentSelection.execute(function () {
 				var url;
-				if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-					url = URLs.init + 'r/' + Subreddits.getAllSubsString() + '/';
-				} else {
-					url = URLs.init + 'r/' + CurrentSelection.getName() + '/';
-				}
+				// if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
+				// 	url = URLs.init + 'r/' + Subreddits.getAllSubsString() + '/';
+				// } else {
+				url = URLs.init + 'r/' + CurrentSelection.getName() + '/';
+				// }
 				load(url, '&after=' + idLast);
 			}, function () {
 				var channel = Channels.getByName(CurrentSelection.getName());
@@ -2168,11 +2168,11 @@ var Subreddits = (function () {
 		});
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;
-			if (sub.toLowerCase() === 'frontpage') {
-				url = URLs.init + "r/" + getAllSubsString() + "/";
-			} else {
-				url = URLs.init + "r/" + sub + "/";
-			}
+			// if (sub.toLowerCase() === 'frontpage') {
+			// 	url = URLs.init + "r/" + getAllSubsString() + "/";
+			// } else {
+			url = URLs.init + "r/" + sub + "/";
+			// }
 			if (results.length > 0) {
 				Posts.load(url, "", results[0].regex);
 			} else {
@@ -2727,7 +2727,7 @@ var URLs = {
 */
 
 // Init all modules listeners
-'use strict';
+"use strict";
 
 UI.initListeners();
 Posts.initListeners();
@@ -2761,12 +2761,12 @@ CurrentSelection.execute(function () {
 	var currentSubName = CurrentSelection.getName();
 	Menu.markSelected({ name: currentSubName });
 	// Load links
-	if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
-		CurrentSelection.setSubreddit('frontPage');
-		Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
-	} else {
-		Posts.load(URLs.init + "r/" + currentSubName + "/");
-	}
+	// if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
+	// 	CurrentSelection.setSubreddit('frontPage');
+	// 	Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+	// } else {
+	Posts.load(URLs.init + "r/" + currentSubName + "/");
+	// }
 	UI.setSubTitle(currentSubName);
 }, function () {
 	// If it's a channel

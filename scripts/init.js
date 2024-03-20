@@ -54,12 +54,12 @@ CurrentSelection.execute(
 		var currentSubName = CurrentSelection.getName();
 		Menu.markSelected({name: currentSubName});
 		// Load links
-		if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
-			CurrentSelection.setSubreddit('frontPage');
-			Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
-		} else {
+		// if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
+		// 	CurrentSelection.setSubreddit('frontPage');
+		// 	Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+		// } else {
 			Posts.load(URLs.init + "r/" + currentSubName + "/");
-		}
+		// }
 		UI.setSubTitle(currentSubName);
 	}, function() { // If it's a channel
 		var channel = Channels.getByName(CurrentSelection.getName());
