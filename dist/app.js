@@ -2583,7 +2583,7 @@ var Subreddits = (function () {
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
 		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
 		UI.el.body.on('click', ".archive_btn", function () {
-			console.log(123);
+			console.log(1);
 			var archives = localStorage.getItem('archives');
 			var archiveDom = "";
 			if (archives) {
