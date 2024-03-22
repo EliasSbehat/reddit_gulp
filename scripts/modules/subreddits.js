@@ -140,14 +140,14 @@ var Subreddits = (function () {
 		return allSubs.substring(0, allSubs.length - 1);
 	};
 
-	var loadSaved = function () { // Only should execute when first loading the app
+	var loadSaved = function (subredditsData) { // Only should execute when first loading the app
 		var subs = Store.getItem("subreeddits");
 		if (subs) {
 			subs = JSON.parse(subs);
 		}
 		list = subs;
 		if (!list) { // If it hasn't been loaded to the 'local Store', save defaults subreddits
-			setList(defaults);
+			setList(subredditsData);
 		}
 		append(list);
 	};
@@ -156,11 +156,11 @@ var Subreddits = (function () {
 		let results = list.filter(item => item.subreddit.toLowerCase() === sub.toLowerCase());
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;
-			// if (sub.toLowerCase() === 'frontpage') {
-			// 	url = URLs.init + "r/" + getAllSubsString() + "/";
-			// } else {
+			if (sub.toLowerCase() === 'frontpage') {
+				url = URLs.init + "r/" + getAllSubsString() + "/";
+			} else {
 				url = URLs.init + "r/" + sub + "/";
-			// }
+			}
 			if (results.length>0) {
 				Posts.load(url, "", results[0].regex);
 			} else {
@@ -189,9 +189,9 @@ var Subreddits = (function () {
 	};
 	var update = function (newSub, regex) {
 		var originalSub = localStorage.getItem("update_sub");
-		// if (listHasSub(newSub)) {
-		// 	return;
-		// }
+		if (listHasSub(newSub)) {
+			return;
+		}
 		_delete(originalSub);
 		detach(originalSub);
 		insert(newSub, regex);
@@ -253,12 +253,12 @@ var Subreddits = (function () {
 			Anim.shakeForm();
 			return;
 		}
-		// if (listHasSub(subName)) {
-		// 	txtSub.value = "";
-		// 	txtSub.setAttribute("placeholder", subName + " already added!");
-		// 	Anim.shakeForm();
-		// 	return;
-		// }
+		if (listHasSub(subName)) {
+			txtSub.value = "";
+			txtSub.setAttribute("placeholder", subName + " already added!");
+			Anim.shakeForm();
+			return;
+		}
 
 		subName = subName.trim();
 

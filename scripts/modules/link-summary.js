@@ -88,41 +88,41 @@ var LinkSummary = (function() {
 			var isGallery = Posts.getList()[postID].is_gallery;
 			var gallery_data = Posts.getList()[postID].gallery_data;
 			var media_metadata = Posts.getList()[postID].media_metadata;
+			var domain = Posts.getList()[postID].domain;
+			console.log(domain);
 			if (linkURL) { // if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
+
 				if (youTubeID) {
-					// summaryHTML +=
-					// 	`<a class="preview-container blck" 
-					// 			href="${linkURL}" 
-					// 			target="_blank">
-					// 	 <img class="video-preview" 
-					// 	      src="//img.youtube.com/vi/${youTubeID}/hqdefault.jpg"/>
-					// 	 </a>`;
-					summaryHTML += 
-						`<iframe 
-							width="560" 
-							height="315" 
-							src="https://www.youtube.com/embed/${youTubeID}?controls=1&autoplay=0" 
-							title="YouTube video player" 
-							frameborder="0" 
-							style="display: block;margin: 0px auto;"
-							allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-							allowfullscreen>
-						</iframe>`;
+					summaryHTML +=
+						`<a class="video-preview-btn preview-container blck" 
+								href="#" data-id="${youTubeID}">
+						 <img class="video-preview" 
+						      src="//img.youtube.com/vi/${youTubeID}/hqdefault.jpg"/>
+						 </a>
+						 <div class="video-preview-box"></div>`;
+				} else if (domain == 'v.redd.it') {
+					summaryHTML +=
+						`<video id="redditVideo" src="${Posts.getList()[postID].media.reddit_video.fallback_url}" controls></video>`;
 				} else if (isGallery) {
 					summaryHTML += '<div class="wrapper_gallery">';
 					for (var i=0;i<gallery_data.items.length;i++) {
 						summaryHTML += `
 						<div class="card_gallery">
+							<a href="${media_metadata[gallery_data.items[i].media_id].s.u}" target="_blank" class="preview-container blck js-img">
 							<img src="${media_metadata[gallery_data.items[i].media_id].p[0].u}" class="cover_gallery" alt="">
+							</a>
 						</div>`;
 					}
 					summaryHTML += '</div>';
 				} else if (imageLink) { // If it's an image link
 					summaryHTML +=
-						'<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
-						'<img class="image-preview" src="' + imageLink + '" />' +
+						'<a href="'+imageLink+'" target="_blank" class="preview-container blck js-img">' +
+						'<img class="image-previews" src="' + imageLink + '" />' +
 						'</a>';
+						// '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
+						// '<img class="image-preview" src="' + imageLink + '" />' +
+						// '</a>';
 				} else { // if it's a Gfycat or RedGifs link
 					var gfycatID = getGfycatIDfromURL(linkURL);
 					var redGifsID = getRedGifsIDfromURL(linkURL);
@@ -231,6 +231,22 @@ var LinkSummary = (function() {
 		UI.el.detailWrap.on('click', '.js-img-preview', function(ev) {
 			ev.preventDefault();
 			Modal.showImageViewer(this.dataset.img);
+		});
+		UI.el.detailWrap.on('click', '.video-preview-btn', function(ev) {
+			ev.preventDefault();
+			$(this).css('display', 'none');
+			$(this).parent().find(".video-preview-box").html(
+				`<iframe 
+					width="560" 
+					height="315" 
+					src="https://www.youtube.com/embed/${$(this).attr('data-id')}?controls=1&autoplay=0" 
+					title="YouTube video player" 
+					frameborder="0" 
+					style="display: block;margin: 0px auto;"
+					allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+					allowfullscreen>
+				</iframe>`
+			);
 		});
 	};
 

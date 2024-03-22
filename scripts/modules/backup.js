@@ -7,7 +7,7 @@
  Store
  */
 
-var Backup = (function() {
+var Backup = (function () {
 
 	var update = 1;
 
@@ -39,13 +39,12 @@ var Backup = (function() {
 						    id='btn-trigger-file'>Choose Backup file</button>
 				<input id='file-chooser'
 							 class="hide"
-					     type="file"
-					     accept="application/json"/>
+					     type="file" />
 			</div>
 		</div>`
 	};
 
-	var shouldUpdate = function() {
+	var shouldUpdate = function () {
 		update = 1;
 	};
 
@@ -55,18 +54,18 @@ var Backup = (function() {
 
 	var prepareDownloadButton = (data) => {
 		let buttonDownload = $$.id('btn-download-data');
-		buttonDownload.href = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+		// buttonDownload.href = "data:text/json;charset=utf-8," + encodeURIComponent(data);
 	};
 
-  var createBackup = function() {
-    if (!update) {
-      return;
-    }
+	var createBackup = function () {
+		if (!update) {
+			return;
+		}
 
-    Modal.show(template.exportData, function() {
-      prepareDownloadButton(getBackupData());
-    });
-  };
+		Modal.show(template.exportData, function () {
+			prepareDownloadButton(getBackupData());
+		});
+	};
 
 	var loadData = (data) => {
 		let refresh = false;
@@ -79,10 +78,10 @@ var Backup = (function() {
 			refresh = true;
 			Store.setItem("subreeddits", JSON.stringify(data.subreddits));
 		}
-		if (data.channels) {
-			refresh = true;
-			Store.setItem("channels", JSON.stringify(data.channels));
-		}
+		// if (data.channels) {
+		// 	refresh = true;
+		// 	Store.setItem("channels", JSON.stringify(data.channels));
+		// }
 		if (refresh) {
 			window.location.reload();
 		}
@@ -90,13 +89,13 @@ var Backup = (function() {
 
 	let readFile = (file) => {
 		let reader = new FileReader();
-		reader.onload = function() {
+		reader.onload = function () {
 			loadData(reader.result);
 		};
 		reader.readAsText(file);
 	};
 
-	var initListeners = function() {
+	var initListeners = function () {
 
 		// On Menu
 		el.buttonExportData.on('click', (ev) => {
@@ -115,14 +114,61 @@ var Backup = (function() {
 		});
 
 		// Forms
-    UI.el.body.on('change', '#file-chooser', function() {
-      let file = this.files[0];
-      readFile(file);
-    });
+		UI.el.body.on('change', '#file-chooser', function (evt) {
+			var config = {
+				locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/dist/${filename}`,
+			};
+			let f = evt.target.files[0];
+			var r = new FileReader();
+			r.onload = function () {
+				var Uints = new Uint8Array(r.result);
+				// console.log(Uints);
+				initSqlJs(config).then(function (SQL) {
+					var db = new SQL.Database(Uints);
+					console.log(db);
+					console.log('Database loaded from file successfully');
+					// You can run queries to check the loaded database
+					var contents = db.exec("SELECT * FROM subreddits");
+					var threads = db.exec("SELECT * FROM threads");
+					console.log(contents, threads);
+				});
+			};
+			r.readAsArrayBuffer(f);
+			// readFile(file);
+		});
 
-    UI.el.body.on('click', '#btn-trigger-file', () => {
-      $$.id('file-chooser').click();
-    });
+		UI.el.body.on('click', '#btn-trigger-file', () => {
+			$$.id('file-chooser').click();
+		});
+		UI.el.body.on('click', '#btn-download-data', () => {
+			const arr = JSON.parse(window.localStorage.getItem("dbBackup"));
+			var blob = new Blob([new Uint8Array(arr)], { type: "application/octet-stream" });
+			var url = URL.createObjectURL(blob);
+			var a = document.createElement("a");
+			a.href = url;
+			a.download = "db.sqlite";
+			a.click();
+			console.log('Database downloaded successfully');
+			// var openRequest = indexedDB.open(DB_NAME, 1);
+			// openRequest.onsuccess = function (event) {
+			// 	var database = event.target.result;
+			// 	var transaction = database.transaction([DB_NAME], "readwrite");
+			// 	var objectStore = transaction.objectStore(DB_NAME);
+			// 	var getRequest = objectStore.getAll(); // Get the binary array
+			// 	getRequest.onsuccess = function (event) {
+			// 		console.log(event);
+			// 		var binaryArray = event.target.result;
+			// 		var blob = new Blob([binaryArray], { type: 'application/octet-stream' });
+			// 		var a = window.document.createElement('a');
+			// 		a.href = window.URL.createObjectURL(blob);
+			// 		a.download = 'backup.sqlite';
+
+			// 		document.body.appendChild(a);
+			// 		a.click();
+			// 		document.body.removeChild(a);
+			// 	};
+			// };
+		});
 	};
 
 	// Exports

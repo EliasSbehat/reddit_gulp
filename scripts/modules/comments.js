@@ -70,7 +70,7 @@ const Comments = (function() {
 			if (c.kind !== "t1") {
 				continue;
 			}
-
+			
 			var html = converter.makeHtml(c.data.body),
 				isPoster = Posts.getList()[currentThread].author === c.data.author,
 				permalink = URLs.init + Posts.getList()[currentThread].link + c.data.id,
@@ -80,7 +80,6 @@ const Comments = (function() {
 					title: "See this comment on reddit.com",
 					tabindex: "-1"
 				};
-
 			var comment =
 				$("<div/>")
 					.addClass("comment-wrap")
@@ -98,14 +97,13 @@ const Comments = (function() {
 						.append($("<div/>")
 							.addClass("comment-body")
 							.html(html)));
-
 			if (c.data.replies &&
 				c.data.replies.data.children[0].kind !== "more") {
 				comment.append(
 					$("<button/>")
 						.addClass("btn blck mrgn-cntr-x comments-button js-reply-button")
 						.attr("data-comment-id", c.data.id)
-						.text("See replies")
+						.text("See replies ("+c.data.replies.data.children.length+")")
 				);
 				replies[c.data.id] = c.data.replies.data.children;
 			}
@@ -118,7 +116,6 @@ const Comments = (function() {
 		if (idParent) {
 			Posts.getLoaded()[idParent] = com;
 		}
-
 		UI.el.detailWrap.find('a')
 			.attr('target', '_blank');
 	};

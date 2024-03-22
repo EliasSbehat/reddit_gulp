@@ -378,7 +378,7 @@ var Backup = (function () {
 
 	var template = {
 		exportData: '\n\t\t<div class=\'new-form move-data\'>\n\t\t\t' + UI.template.closeModalButton + '\n\t\t\t<div class=\'move-data-exp\'>\n\t\t\t\t<h3>Export Data</h3>\n\t\t\t\t<p>You can back-up your local subscriptions and then import them to any other Reeddit instance, or just restore them.</p>\n\t\t\t\t<a class="btn no-ndrln txt-cntr blck w-100 mrgn-y pad-y"\n\t\t\t\t   id="btn-download-data"\n\t\t\t\t   download="reedditdata.json">Download Data</a>\n\t\t\t</div>\n\t\t</div>',
-		importData: '\n\t\t<div class=\'new-form move-data\'>\n\t\t\t' + UI.template.closeModalButton + '\n\t\t\t<div class=\'move-data-imp\'>\n\t\t\t\t<h3>Import Data</h3>\n\t\t\t\t<p>Load the subscriptions from another Reeddit instance.</p>\n\t\t\t\t<p>Once you choose the reeddit data file, Reeddit will refresh with the imported data.</p>\n\t\t\t\t<button class=\'btn w-100 mrgn-y pad-y\'\n\t\t\t\t\t\t    id=\'btn-trigger-file\'>Choose Backup file</button>\n\t\t\t\t<input id=\'file-chooser\'\n\t\t\t\t\t\t\t class="hide"\n\t\t\t\t\t     type="file"\n\t\t\t\t\t     accept="application/json"/>\n\t\t\t</div>\n\t\t</div>'
+		importData: '\n\t\t<div class=\'new-form move-data\'>\n\t\t\t' + UI.template.closeModalButton + '\n\t\t\t<div class=\'move-data-imp\'>\n\t\t\t\t<h3>Import Data</h3>\n\t\t\t\t<p>Load the subscriptions from another Reeddit instance.</p>\n\t\t\t\t<p>Once you choose the reeddit data file, Reeddit will refresh with the imported data.</p>\n\t\t\t\t<button class=\'btn w-100 mrgn-y pad-y\'\n\t\t\t\t\t\t    id=\'btn-trigger-file\'>Choose Backup file</button>\n\t\t\t\t<input id=\'file-chooser\'\n\t\t\t\t\t\t\t class="hide"\n\t\t\t\t\t     type="file" />\n\t\t\t</div>\n\t\t</div>'
 	};
 
 	var shouldUpdate = function shouldUpdate() {
@@ -391,7 +391,7 @@ var Backup = (function () {
 
 	var prepareDownloadButton = function prepareDownloadButton(data) {
 		var buttonDownload = $$.id('btn-download-data');
-		buttonDownload.href = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+		// buttonDownload.href = "data:text/json;charset=utf-8," + encodeURIComponent(data);
 	};
 
 	var createBackup = function createBackup() {
@@ -415,10 +415,10 @@ var Backup = (function () {
 			refresh = true;
 			Store.setItem("subreeddits", JSON.stringify(data.subreddits));
 		}
-		if (data.channels) {
-			refresh = true;
-			Store.setItem("channels", JSON.stringify(data.channels));
-		}
+		// if (data.channels) {
+		// 	refresh = true;
+		// 	Store.setItem("channels", JSON.stringify(data.channels));
+		// }
 		if (refresh) {
 			window.location.reload();
 		}
@@ -451,13 +451,62 @@ var Backup = (function () {
 		});
 
 		// Forms
-		UI.el.body.on('change', '#file-chooser', function () {
-			var file = this.files[0];
-			readFile(file);
+		UI.el.body.on('change', '#file-chooser', function (evt) {
+			var config = {
+				locateFile: function locateFile(filename) {
+					return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/dist/' + filename;
+				}
+			};
+			var f = evt.target.files[0];
+			var r = new FileReader();
+			r.onload = function () {
+				var Uints = new Uint8Array(r.result);
+				// console.log(Uints);
+				initSqlJs(config).then(function (SQL) {
+					var db = new SQL.Database(Uints);
+					console.log(db);
+					console.log('Database loaded from file successfully');
+					// You can run queries to check the loaded database
+					var contents = db.exec("SELECT * FROM subreddits");
+					var threads = db.exec("SELECT * FROM threads");
+					console.log(contents, threads);
+				});
+			};
+			r.readAsArrayBuffer(f);
+			// readFile(file);
 		});
 
 		UI.el.body.on('click', '#btn-trigger-file', function () {
 			$$.id('file-chooser').click();
+		});
+		UI.el.body.on('click', '#btn-download-data', function () {
+			var arr = JSON.parse(window.localStorage.getItem("dbBackup"));
+			var blob = new Blob([new Uint8Array(arr)], { type: "application/octet-stream" });
+			var url = URL.createObjectURL(blob);
+			var a = document.createElement("a");
+			a.href = url;
+			a.download = "db.sqlite";
+			a.click();
+			console.log('Database downloaded successfully');
+			// var openRequest = indexedDB.open(DB_NAME, 1);
+			// openRequest.onsuccess = function (event) {
+			// 	var database = event.target.result;
+			// 	var transaction = database.transaction([DB_NAME], "readwrite");
+			// 	var objectStore = transaction.objectStore(DB_NAME);
+			// 	var getRequest = objectStore.getAll(); // Get the binary array
+			// 	getRequest.onsuccess = function (event) {
+			// 		console.log(event);
+			// 		var binaryArray = event.target.result;
+			// 		var blob = new Blob([binaryArray], { type: 'application/octet-stream' });
+			// 		var a = window.document.createElement('a');
+			// 		a.href = window.URL.createObjectURL(blob);
+			// 		a.download = 'backup.sqlite';
+
+			// 		document.body.appendChild(a);
+			// 		a.click();
+			// 		document.body.removeChild(a);
+			// 	};
+			// };
 		});
 	};
 
@@ -805,11 +854,9 @@ var Comments = (function () {
 				title: "See this comment on reddit.com",
 				tabindex: "-1"
 			};
-
 			var comment = $("<div/>").addClass("comment-wrap").attr('tabindex', '0').append($('<div/>').append($("<div/>").addClass("comment-data").append($("<span/>").addClass(isPoster ? "comment-poster" : "comment-author").text(c.data.author)).append($("<a/>").addClass("comment-info no-ndrln").attr(commentLink).text(timeSince(now, c.data.created_utc)))).append($("<div/>").addClass("comment-body").html(html)));
-
 			if (c.data.replies && c.data.replies.data.children[0].kind !== "more") {
-				comment.append($("<button/>").addClass("btn blck mrgn-cntr-x comments-button js-reply-button").attr("data-comment-id", c.data.id).text("See replies"));
+				comment.append($("<button/>").addClass("btn blck mrgn-cntr-x comments-button js-reply-button").attr("data-comment-id", c.data.id).text("See replies (" + c.data.replies.data.children.length + ")"));
 				replies[c.data.id] = c.data.replies.data.children;
 			}
 
@@ -821,7 +868,6 @@ var Comments = (function () {
 		if (idParent) {
 			Posts.getLoaded()[idParent] = com;
 		}
-
 		UI.el.detailWrap.find('a').attr('target', '_blank');
 	};
 
@@ -1167,37 +1213,38 @@ var LinkSummary = (function () {
 			var isGallery = Posts.getList()[postID].is_gallery;
 			var gallery_data = Posts.getList()[postID].gallery_data;
 			var media_metadata = Posts.getList()[postID].media_metadata;
+			var domain = Posts.getList()[postID].domain;
+			console.log(domain);
 			if (linkURL) {
 				// if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
+
 				if (youTubeID) {
-					// summaryHTML +=
-					// 	`<a class="preview-container blck"
-					// 			href="${linkURL}"
-					// 			target="_blank">
-					// 	 <img class="video-preview"
-					// 	      src="//img.youtube.com/vi/${youTubeID}/hqdefault.jpg"/>
-					// 	 </a>`;
-					summaryHTML += "<iframe \n\t\t\t\t\t\t\twidth=\"560\" \n\t\t\t\t\t\t\theight=\"315\" \n\t\t\t\t\t\t\tsrc=\"https://www.youtube.com/embed/" + youTubeID + "?controls=1&autoplay=0\" \n\t\t\t\t\t\t\ttitle=\"YouTube video player\" \n\t\t\t\t\t\t\tframeborder=\"0\" \n\t\t\t\t\t\t\tstyle=\"display: block;margin: 0px auto;\"\n\t\t\t\t\t\t\tallow=\"accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" \n\t\t\t\t\t\t\tallowfullscreen>\n\t\t\t\t\t\t</iframe>";
+					summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
+				} else if (domain == 'v.redd.it') {
+					summaryHTML += "<video id=\"redditVideo\" src=\"" + Posts.getList()[postID].media.reddit_video.fallback_url + "\" controls></video>";
 				} else if (isGallery) {
 					summaryHTML += '<div class="wrapper_gallery">';
 					for (var i = 0; i < gallery_data.items.length; i++) {
-						summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery\" alt=\"\">\n\t\t\t\t\t\t</div>";
+						summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\" target=\"_blank\" class=\"preview-container blck js-img\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
 					}
 					summaryHTML += '</div>';
 				} else if (imageLink) {
 					// If it's an image link
-					summaryHTML += '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' + '<img class="image-preview" src="' + imageLink + '" />' + '</a>';
+					summaryHTML += '<a href="' + imageLink + '" target="_blank" class="preview-container blck js-img">' + '<img class="image-previews" src="' + imageLink + '" />' + '</a>';
+					// '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
+					// '<img class="image-preview" src="' + imageLink + '" />' +
+					// '</a>';
 				} else {
-					// if it's a Gfycat or RedGifs link
-					var gfycatID = getGfycatIDfromURL(linkURL);
-					var redGifsID = getRedGifsIDfromURL(linkURL);
-					if (gfycatID) {
-						summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://gfycat.com/ifr/" + gfycatID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
-					} else if (redGifsID) {
-						summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://redgifs.com/ifr/" + redGifsID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
+						// if it's a Gfycat or RedGifs link
+						var gfycatID = getGfycatIDfromURL(linkURL);
+						var redGifsID = getRedGifsIDfromURL(linkURL);
+						if (gfycatID) {
+							summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://gfycat.com/ifr/" + gfycatID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
+						} else if (redGifsID) {
+							summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://redgifs.com/ifr/" + redGifsID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
+						}
 					}
-				}
 			}
 		}
 		summaryHTML += "<section id='comments-container'></section>";
@@ -1294,6 +1341,11 @@ var LinkSummary = (function () {
 		UI.el.detailWrap.on('click', '.js-img-preview', function (ev) {
 			ev.preventDefault();
 			Modal.showImageViewer(this.dataset.img);
+		});
+		UI.el.detailWrap.on('click', '.video-preview-btn', function (ev) {
+			ev.preventDefault();
+			$(this).css('display', 'none');
+			$(this).parent().find(".video-preview-box").html("<iframe \n\t\t\t\t\twidth=\"560\" \n\t\t\t\t\theight=\"315\" \n\t\t\t\t\tsrc=\"https://www.youtube.com/embed/" + $(this).attr('data-id') + "?controls=1&autoplay=0\" \n\t\t\t\t\ttitle=\"YouTube video player\" \n\t\t\t\t\tframeborder=\"0\" \n\t\t\t\t\tstyle=\"display: block;margin: 0px auto;\"\n\t\t\t\t\tallow=\"accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" \n\t\t\t\t\tallowfullscreen>\n\t\t\t\t</iframe>");
 		});
 	};
 
@@ -1797,6 +1849,7 @@ var Posts = (function () {
 					author: post.data.author,
 					preview: post.data.preview,
 					is_gallery: post.data.is_gallery,
+					media: post.data.media,
 					media_metadata: post.data.media_metadata,
 					gallery_data: post.data.gallery_data,
 					over_18: post.data.over_18,
@@ -1812,11 +1865,11 @@ var Posts = (function () {
 		}
 		CurrentSelection.execute(function () {
 			// if it's subreddit
-			// if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-			// 	load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
-			// } else {
-			load(URLs.init + "r/" + CurrentSelection.getName() + "/");
-			// }
+			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
+				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+			} else {
+				load(URLs.init + "r/" + CurrentSelection.getName() + "/");
+			}
 		}, function () {
 			// if it's channel
 			Channels.loadPosts(Channels.getByName(CurrentSelection.getName()));
@@ -1870,11 +1923,11 @@ var Posts = (function () {
 		UI.el.mainWrap.on('click', '#btn-load-more-posts', function () {
 			CurrentSelection.execute(function () {
 				var url;
-				// if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-				// 	url = URLs.init + 'r/' + Subreddits.getAllSubsString() + '/';
-				// } else {
-				url = URLs.init + 'r/' + CurrentSelection.getName() + '/';
-				// }
+				if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
+					url = URLs.init + 'r/' + Subreddits.getAllSubsString() + '/';
+				} else {
+					url = URLs.init + 'r/' + CurrentSelection.getName() + '/';
+				}
 				load(url, '&after=' + idLast);
 			}, function () {
 				var channel = Channels.getByName(CurrentSelection.getName());
@@ -2148,7 +2201,7 @@ var Subreddits = (function () {
 		return allSubs.substring(0, allSubs.length - 1);
 	};
 
-	var loadSaved = function loadSaved() {
+	var loadSaved = function loadSaved(subredditsData) {
 		// Only should execute when first loading the app
 		var subs = Store.getItem("subreeddits");
 		if (subs) {
@@ -2157,7 +2210,7 @@ var Subreddits = (function () {
 		list = subs;
 		if (!list) {
 			// If it hasn't been loaded to the 'local Store', save defaults subreddits
-			setList(defaults);
+			setList(subredditsData);
 		}
 		append(list);
 	};
@@ -2168,11 +2221,11 @@ var Subreddits = (function () {
 		});
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;
-			// if (sub.toLowerCase() === 'frontpage') {
-			// 	url = URLs.init + "r/" + getAllSubsString() + "/";
-			// } else {
-			url = URLs.init + "r/" + sub + "/";
-			// }
+			if (sub.toLowerCase() === 'frontpage') {
+				url = URLs.init + "r/" + getAllSubsString() + "/";
+			} else {
+				url = URLs.init + "r/" + sub + "/";
+			}
 			if (results.length > 0) {
 				Posts.load(url, "", results[0].regex);
 			} else {
@@ -2201,9 +2254,9 @@ var Subreddits = (function () {
 	};
 	var update = function update(newSub, regex) {
 		var originalSub = localStorage.getItem("update_sub");
-		// if (listHasSub(newSub)) {
-		// 	return;
-		// }
+		if (listHasSub(newSub)) {
+			return;
+		}
 		_delete(originalSub);
 		detach(originalSub);
 		insert(newSub, regex);
@@ -2267,12 +2320,12 @@ var Subreddits = (function () {
 			Anim.shakeForm();
 			return;
 		}
-		// if (listHasSub(subName)) {
-		// 	txtSub.value = "";
-		// 	txtSub.setAttribute("placeholder", subName + " already added!");
-		// 	Anim.shakeForm();
-		// 	return;
-		// }
+		if (listHasSub(subName)) {
+			txtSub.value = "";
+			txtSub.setAttribute("placeholder", subName + " already added!");
+			Anim.shakeForm();
+			return;
+		}
 
 		subName = subName.trim();
 
@@ -2729,6 +2782,8 @@ var URLs = {
 // Init all modules listeners
 "use strict";
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
 UI.initListeners();
 Posts.initListeners();
 Comments.initListeners();
@@ -2749,57 +2804,136 @@ if (is.wideScreen) {
 
 CurrentSelection.loadSaved();
 
-Subreddits.loadSaved();
-Channels.loadSaved();
+var initDefaults = [{
+	"subreddit": "frontPage",
+	"regex": "f"
+}, {
+	"subreddit": "all",
+	"regex": "a"
+}, {
+	"subreddit": "pics",
+	"regex": "p"
+}, {
+	"subreddit": "tech",
+	"regex": "t"
+}, {
+	"subreddit": "cryptocurrencies",
+	"regex": "crypto"
+}];
+var defaults = [];
+var initSqlJs = window.initSqlJs;
+var DB_NAME = 'reddit_db';
+var initDb = function initDb() {
+	return new Promise(function (resolve, reject) {
+		initSqlJs({
+			locateFile: function locateFile(file) {
+				return "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.0/dist/" + file;
+			}
+		}).then(function (SQL) {
+			var db = new SQL.Database();
+			db.run("CREATE TABLE subreddits(subreddit text, regex text);");
+			db.run("CREATE TABLE threads(id text);");
+			for (var i = 0; i < initDefaults.length; i++) {
+				var result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + initDefaults[i].subreddit + "';");
+				if (result.length == 0) {
+					db.run("INSERT INTO subreddits VALUES ('" + initDefaults[i].subreddit + "', '" + initDefaults[i].regex + "');");
+				}
+			}
+			db.run("INSERT INTO threads VALUES ('testid');");
+			var subreddits = db.exec("SELECT * FROM subreddits;");
+			if (subreddits.length > 0) {
+				for (var j = 0; j < subreddits[0].values.length; j++) {
+					defaults.push({
+						"subreddit": subreddits[0].values[j][0],
+						"regex": subreddits[0].values[j][1]
+					});
+				}
+			}
+			resolve(db);
+		})["catch"](function (error) {
+			reject(error);
+		});
+	});
+};
 
-if (location.hash) {
-	Comments.navigateFromHash();
-}
+initDb().then(function (db) {
+	saveDB(db);
+	console.log("Database initialization successful.");
+	Subreddits.loadSaved(defaults);
+	console.log(defaults);
+	Channels.loadSaved();
 
-CurrentSelection.execute(function () {
-	// If it's a subreddit
-	var currentSubName = CurrentSelection.getName();
-	Menu.markSelected({ name: currentSubName });
-	// Load links
-	// if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
-	// 	CurrentSelection.setSubreddit('frontPage');
-	// 	Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
-	// } else {
-	Posts.load(URLs.init + "r/" + currentSubName + "/");
-	// }
-	UI.setSubTitle(currentSubName);
-}, function () {
-	// If it's a channel
-	var channel = Channels.getByName(CurrentSelection.getName());
-	Menu.markSelected({ type: 'channel', name: channel.name });
-	Channels.loadPosts(channel);
-});
+	if (location.hash) {
+		Comments.navigateFromHash();
+	}
 
-ThemeSwitcher.init();
-
-if (is.mobile) {
-
-	UI.scrollTop();
-
-	var touch = 'touchmove';
-
-	$$.id("edit-subs").addEventListener(touch, function (e) {
-		e.preventDefault();
-	}, false);
-
-	document.getElementsByTagName('header')[0].addEventListener(touch, function (e) {
-		if (Menu.isShowing()) {
-			e.preventDefault();
+	CurrentSelection.execute(function () {
+		// If it's a subreddit
+		var currentSubName = CurrentSelection.getName();
+		Menu.markSelected({ name: currentSubName });
+		// Load links
+		if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
+			CurrentSelection.setSubreddit('frontPage');
+			Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+		} else {
+			Posts.load(URLs.init + "r/" + currentSubName + "/");
 		}
-	}, false);
+		UI.setSubTitle(currentSubName);
+	}, function () {
+		// If it's a channel
+		var channel = Channels.getByName(CurrentSelection.getName());
+		Menu.markSelected({ type: 'channel', name: channel.name });
+		Channels.loadPosts(channel);
+	});
 
-	if (is.iPad) {
-		UI.iPadScrollFix();
+	ThemeSwitcher.init();
+
+	if (is.mobile) {
+
+		UI.scrollTop();
+
+		var touch = 'touchmove';
+
+		$$.id("edit-subs").addEventListener(touch, function (e) {
+			e.preventDefault();
+		}, false);
+
+		document.getElementsByTagName('header')[0].addEventListener(touch, function (e) {
+			if (Menu.isShowing()) {
+				e.preventDefault();
+			}
+		}, false);
+
+		if (is.iPad) {
+			UI.iPadScrollFix();
+		}
+
+		if (is.iOS7) {
+			document.body.classList.add("ios7");
+		}
 	}
 
-	if (is.iOS7) {
-		document.body.classList.add("ios7");
-	}
+	FastClick.attach(document.body);
+})["catch"](function (error) {
+	console.error("Error initializing database:", error);
+});
+function saveDB(db) {
+	var binaryArray = db["export"](); // Convert the db to binary array
+	window.localStorage.setItem("dbBackup", JSON.stringify([].concat(_toConsumableArray(binaryArray))));
+
+	// // Save to IndexedDB
+	// var openRequest = indexedDB.open(DB_NAME, 1);
+	// openRequest.onsuccess = function (event) {
+	// 	var database = event.target.result;
+	// 	var transaction = database.transaction([DB_NAME], "readwrite");
+	// 	var objectStore = transaction.objectStore(DB_NAME);
+	// 	objectStore.clear(); // Clear existing entries
+	// 	const key = Date.now();
+	// 	objectStore.add(binaryArray, key); // Add the binaryArray to object store
+	// };
+	// openRequest.onupgradeneeded = function(event) {
+	// 	var database = event.target.result;
+	// 	database.createObjectStore(DB_NAME); // Create object store if it doesn't exist
+	// };
 }
-
-FastClick.attach(document.body);
+// Subreddits.loadSaved();
