@@ -78,6 +78,10 @@ var Backup = (function () {
 			refresh = true;
 			Store.setItem("subreeddits", JSON.stringify(data.subreddits));
 		}
+		if (data.discards) {
+			refresh = true;
+			Store.setItem("discards", JSON.stringify(data.discards));
+		}
 		// if (data.channels) {
 		// 	refresh = true;
 		// 	Store.setItem("channels", JSON.stringify(data.channels));
@@ -129,8 +133,8 @@ var Backup = (function () {
 					console.log('Database loaded from file successfully');
 					// You can run queries to check the loaded database
 					var contents = db.exec("SELECT * FROM subreddits");
-					var threads = db.exec("SELECT * FROM threads");
-					console.log(contents, threads);
+					var discards = db.exec("SELECT * FROM discards");
+					console.log(contents, discards);
 					var defaults = [];
 					for (var j = 0; j < contents[0].values.length; j++) {
 						defaults.push({
@@ -138,7 +142,11 @@ var Backup = (function () {
 							"regex": contents[0].values[j][1]
 						});
 					}
-					loadData({subreddits:defaults});
+					var discardsData = [];
+					for (var k = 0; k < discards[0].values.length; k++) {
+						discardsData.push(discards[0].values[k][0]);
+					}
+					loadData({ subreddits: defaults, discards: discardsData });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -157,19 +165,26 @@ var Backup = (function () {
 						locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.0/dist/${file}`
 					}).then(SQL => {
 						var subs = Store.getItem("subreeddits");
+						var discards = Store.getItem("discards");
 						if (subs) {
 							subs = JSON.parse(subs);
 						}
+
 						const db = new SQL.Database();
 						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
-						db.run("CREATE TABLE threads(id text);");
+						db.run("CREATE TABLE discards(id text);");
 						for (var i = 0; i < subs.length; i++) {
 							const result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
 							if (result.length == 0) {
 								db.run("INSERT INTO subreddits VALUES ('" + subs[i].subreddit + "', '" + subs[i].regex + "');");
 							}
 						}
-						db.run("INSERT INTO threads VALUES ('testid');");
+						if (discards) {
+							discards = JSON.parse(discards);
+							for (var j = 0; j < discards.length; j++) {
+								db.run("INSERT INTO discards VALUES ('" + discards[j] + "');");
+							}
+						}
 						resolve(db);
 					}).catch(error => {
 						reject(error);

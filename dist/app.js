@@ -417,6 +417,10 @@ var Backup = (function () {
 			refresh = true;
 			Store.setItem("subreeddits", JSON.stringify(data.subreddits));
 		}
+		if (data.discards) {
+			refresh = true;
+			Store.setItem("discards", JSON.stringify(data.discards));
+		}
 		// if (data.channels) {
 		// 	refresh = true;
 		// 	Store.setItem("channels", JSON.stringify(data.channels));
@@ -470,8 +474,8 @@ var Backup = (function () {
 					console.log('Database loaded from file successfully');
 					// You can run queries to check the loaded database
 					var contents = db.exec("SELECT * FROM subreddits");
-					var threads = db.exec("SELECT * FROM threads");
-					console.log(contents, threads);
+					var discards = db.exec("SELECT * FROM discards");
+					console.log(contents, discards);
 					var defaults = [];
 					for (var j = 0; j < contents[0].values.length; j++) {
 						defaults.push({
@@ -479,7 +483,11 @@ var Backup = (function () {
 							"regex": contents[0].values[j][1]
 						});
 					}
-					loadData({ subreddits: defaults });
+					var discardsData = [];
+					for (var k = 0; k < discards[0].values.length; k++) {
+						discardsData.push(discards[0].values[k][0]);
+					}
+					loadData({ subreddits: defaults, discards: discardsData });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -500,19 +508,26 @@ var Backup = (function () {
 						}
 					}).then(function (SQL) {
 						var subs = Store.getItem("subreeddits");
+						var discards = Store.getItem("discards");
 						if (subs) {
 							subs = JSON.parse(subs);
 						}
+
 						var db = new SQL.Database();
 						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
-						db.run("CREATE TABLE threads(id text);");
+						db.run("CREATE TABLE discards(id text);");
 						for (var i = 0; i < subs.length; i++) {
 							var result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
 							if (result.length == 0) {
 								db.run("INSERT INTO subreddits VALUES ('" + subs[i].subreddit + "', '" + subs[i].regex + "');");
 							}
 						}
-						db.run("INSERT INTO threads VALUES ('testid');");
+						if (discards) {
+							discards = JSON.parse(discards);
+							for (var j = 0; j < discards.length; j++) {
+								db.run("INSERT INTO discards VALUES ('" + discards[j] + "');");
+							}
+						}
 						resolve(db);
 					})['catch'](function (error) {
 						reject(error);
@@ -1237,51 +1252,53 @@ var LinkSummary = (function () {
 				Posts.getList()[postID].selftextParsed = true;
 			}
 			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
-		} else {
-			// if it's an image
-			var linkURL = Posts.getList()[postID].url;
-			var imageURL = "";
-			if (Posts.getList()[postID].preview) {
-				imageURL = Posts.getList()[postID].preview.images[0].source.url;
-			}
-			var imageLink = checkImageLink(imageURL);
-
-			var isGallery = Posts.getList()[postID].is_gallery;
-			var gallery_data = Posts.getList()[postID].gallery_data;
-			var media_metadata = Posts.getList()[postID].media_metadata;
-			var domain = Posts.getList()[postID].domain;
-			if (linkURL) {
-				// if it's a YouTube video
-				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
-
-				if (youTubeID) {
-					summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
-				} else if (domain == 'v.redd.it') {
-					summaryHTML += "<video id=\"redditVideo\" src=\"" + Posts.getList()[postID].media.reddit_video.fallback_url + "\" controls></video>";
-				} else if (isGallery) {
-					summaryHTML += '<div class="wrapper_gallery">';
-					for (var i = 0; i < gallery_data.items.length; i++) {
-						summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"#preview\" target=\"_blank\" class=\"preview-container blck js-img-preview\" data-img=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery image-preview\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
-					}
-					summaryHTML += '</div>';
-				} else if (imageLink) {
-					// If it's an image link
-					summaryHTML += '<a href="' + imageLink + '" target="_blank" class="preview-container blck js-img">' + '<img class="image-previews" src="' + imageLink + '" />' + '</a>';
-					// '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
-					// '<img class="image-preview" src="' + imageLink + '" />' +
-					// '</a>';
-				} else {
-						// if it's a Gfycat or RedGifs link
-						var gfycatID = getGfycatIDfromURL(linkURL);
-						var redGifsID = getRedGifsIDfromURL(linkURL);
-						if (gfycatID) {
-							summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://gfycat.com/ifr/" + gfycatID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
-						} else if (redGifsID) {
-							summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://redgifs.com/ifr/" + redGifsID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
-						}
-					}
-			}
 		}
+		// else { // if it's an image
+		var linkURL = Posts.getList()[postID].url;
+		var imageURL = "";
+		if (Posts.getList()[postID].preview) {
+			imageURL = Posts.getList()[postID].preview.images[0].source.url;
+		}
+		var imageLink = checkImageLink(imageURL);
+
+		var isGallery = Posts.getList()[postID].is_gallery;
+		var gallery_data = Posts.getList()[postID].gallery_data;
+		var media_metadata = Posts.getList()[postID].media_metadata;
+		var domain = Posts.getList()[postID].domain;
+		console.log(Posts.getList()[postID], 'check');
+		if (linkURL) {
+			// if it's a YouTube video
+			var youTubeID = getYouTubeVideoIDfromURL(linkURL);
+
+			if (youTubeID) {
+				summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
+			} else if (domain == 'v.redd.it') {
+
+				summaryHTML += "<video id=\"redditVideo\" style=\"width=100%\" src=\"" + Posts.getList()[postID].media.reddit_video.fallback_url + "\" controls></video>";
+			} else if (isGallery) {
+				summaryHTML += '<div class="wrapper_gallery">';
+				for (var i = 0; i < gallery_data.items.length; i++) {
+					summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"#preview\" target=\"_blank\" class=\"preview-container blck js-img-preview\" data-img=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery image-preview\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
+				}
+				summaryHTML += '</div>';
+			} else if (imageLink) {
+				// If it's an image link
+				summaryHTML += '<a href="' + imageLink + '" target="_blank" class="preview-container blck js-img">' + '<img class="image-previews" src="' + imageLink + '" />' + '</a>';
+				// '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
+				// '<img class="image-preview" src="' + imageLink + '" />' +
+				// '</a>';
+			} else {
+					// if it's a Gfycat or RedGifs link
+					var gfycatID = getGfycatIDfromURL(linkURL);
+					var redGifsID = getRedGifsIDfromURL(linkURL);
+					if (gfycatID) {
+						summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://gfycat.com/ifr/" + gfycatID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
+					} else if (redGifsID) {
+						summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://redgifs.com/ifr/" + redGifsID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
+					}
+				}
+		}
+		// }
 		summaryHTML += "<section id='comments-container'></section>";
 		UI.el.detailWrap.append(summaryHTML);
 		updatePostTime(data.created_utc);
@@ -1839,6 +1856,13 @@ var Posts = (function () {
 						thumbnail[0].style.backgroundImage = "url(https://www.redditstatic.com/sprite-reddit.vSUv8UUCI2g.png)";
 						thumbnail[0].style.backgroundPosition = "-5px -298px";
 					}
+				}
+			}
+			var discards = localStorage.getItem('discards');
+			if (discards) {
+				discards = JSON.parse(discards);
+				for (var j = 0; j < discards.length; j++) {
+					$("#" + discards[j]).css('display', 'none');
 				}
 			}
 		}

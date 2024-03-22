@@ -144,18 +144,19 @@ var Posts = (function () {
 	var render = function (links, paging) { // links: API raw data
 		var modifiedLinks = links;
 		var childrens = [];
-		for (var i=0;i<links.children.length;i++) {
+		for (var i = 0; i < links.children.length; i++) {
 			var linkChild = links.children[i];
 			Object.assign(linkChild.data, {
 				time_ago: timeAgo(links.children[i].data.created_utc),
 				unix_time: unixTime(links.children[i].data.created_utc),
-				comments: (links.children[i].data.num_comments==1)?"comment":links.children[i].data.num_comments+" comments"
+				comments: (links.children[i].data.num_comments == 1) ? "comment" : links.children[i].data.num_comments + " comments"
 			});
 			childrens.push(linkChild);
 		}
 		modifiedLinks.children = childrens;
 		var linksCount = links.children.length,
 			main = UI.el.mainWrap;
+
 
 		if (paging) {
 			$(".loader").remove();
@@ -196,7 +197,7 @@ var Posts = (function () {
 			for (let i = 0; i < thumbnails.length; i++) {
 				const thumbnail = $(thumbnails[i]);
 				const backgroundImageStyle = thumbnail.attr('style').replace("background-image: ", "");
-				
+
 				if (backgroundImageStyle === 'url()' ||
 					backgroundImageStyle === 'url(default)' ||
 					backgroundImageStyle === 'url(nsfw)' ||
@@ -220,6 +221,13 @@ var Posts = (function () {
 						thumbnail[0].style.backgroundImage = "url(https://www.redditstatic.com/sprite-reddit.vSUv8UUCI2g.png)";
 						thumbnail[0].style.backgroundPosition = "-5px -298px";
 					}
+				}
+			}
+			var discards = localStorage.getItem('discards');
+			if (discards) {
+				discards = JSON.parse(discards);
+				for (var j = 0; j < discards.length; j++) {
+					$("#" + discards[j]).css('display', 'none');
 				}
 			}
 		}
@@ -363,22 +371,22 @@ var Posts = (function () {
 			});
 		});
 	};
-	var timeAgo = function(utcTimestamp) {
+	var timeAgo = function (utcTimestamp) {
 		var now = new Date().getTime();
 		var timeDifference = now - (utcTimestamp * 1000); //convert unix timestamp to milliseconds
 		var differenceInSeconds = Math.floor(timeDifference / 1000);
-	  
+
 		if (differenceInSeconds < 60) {
-		  return "Just now";
+			return "Just now";
 		} else if ((differenceInSeconds / 60) < 60) {
-		  return Math.floor(differenceInSeconds / 60) + " minutes ago";
+			return Math.floor(differenceInSeconds / 60) + " minutes ago";
 		} else if ((differenceInSeconds / 3600) < 24) {
-		  return Math.floor(differenceInSeconds / 3600) + " hours ago";
+			return Math.floor(differenceInSeconds / 3600) + " hours ago";
 		} else {
-		  return Math.floor(differenceInSeconds / 86400) + " days ago";
+			return Math.floor(differenceInSeconds / 86400) + " days ago";
 		}
 	};
-	var unixTime = function(unixTime) {
+	var unixTime = function (unixTime) {
 		const date = new Date(unixTime * 1000);
 
 		const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

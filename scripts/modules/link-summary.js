@@ -78,7 +78,8 @@ var LinkSummary = (function() {
 				Posts.getList()[postID].selftextParsed = true;
 			}
 			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
-		} else { // if it's an image
+		} 
+		// else { // if it's an image
 			var linkURL = Posts.getList()[postID].url;
 			var imageURL = "";
 			if (Posts.getList()[postID].preview) {
@@ -90,6 +91,7 @@ var LinkSummary = (function() {
 			var gallery_data = Posts.getList()[postID].gallery_data;
 			var media_metadata = Posts.getList()[postID].media_metadata;
 			var domain = Posts.getList()[postID].domain;
+			console.log(Posts.getList()[postID], 'check');
 			if (linkURL) { // if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
 
@@ -102,8 +104,9 @@ var LinkSummary = (function() {
 						 </a>
 						 <div class="video-preview-box"></div>`;
 				} else if (domain == 'v.redd.it') {
+					
 					summaryHTML +=
-						`<video id="redditVideo" src="${Posts.getList()[postID].media.reddit_video.fallback_url}" controls></video>`;
+						`<video id="redditVideo" style="width=100%" src="${Posts.getList()[postID].media.reddit_video.fallback_url}" controls></video>`;
 				} else if (isGallery) {
 					summaryHTML += '<div class="wrapper_gallery">';
 					for (var i=0;i<gallery_data.items.length;i++) {
@@ -139,7 +142,7 @@ var LinkSummary = (function() {
 					}
 				}
 			}
-		}
+		// }
 		summaryHTML += "<section id='comments-container'></section>";
 		UI.el.detailWrap.append(summaryHTML);
 		updatePostTime(data.created_utc);
