@@ -414,13 +414,15 @@ var Backup = (function () {
 		}
 
 		if (data.subreddits) {
-			refresh = true;
 			Store.setItem("subreeddits", JSON.stringify(data.subreddits));
 		}
 		if (data.discards) {
-			refresh = true;
 			Store.setItem("discards", JSON.stringify(data.discards));
 		}
+		if (data.archives) {
+			Store.setItem("archives", JSON.stringify(data.archives));
+		}
+		refresh = true;
 		// if (data.channels) {
 		// 	refresh = true;
 		// 	Store.setItem("channels", JSON.stringify(data.channels));
@@ -475,7 +477,8 @@ var Backup = (function () {
 					// You can run queries to check the loaded database
 					var contents = db.exec("SELECT * FROM subreddits");
 					var discards = db.exec("SELECT * FROM discards");
-					console.log(contents, discards);
+					var archives = db.exec("SELECT * FROM archives");
+					console.log(contents, discards, archives);
 					var defaults = [];
 					for (var j = 0; j < contents[0].values.length; j++) {
 						defaults.push({
@@ -487,7 +490,11 @@ var Backup = (function () {
 					for (var k = 0; k < discards[0].values.length; k++) {
 						discardsData.push(discards[0].values[k][0]);
 					}
-					loadData({ subreddits: defaults, discards: discardsData });
+					var archivesData = [];
+					for (var q = 0; q < archives[0].values.length; q++) {
+						archivesData.push(archives[0].values[q][0]);
+					}
+					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -509,6 +516,8 @@ var Backup = (function () {
 					}).then(function (SQL) {
 						var subs = Store.getItem("subreeddits");
 						var discards = Store.getItem("discards");
+						var archives = Store.getItem("archives");
+						var archives_comments = Store.getItem("archives_comments");
 						if (subs) {
 							subs = JSON.parse(subs);
 						}
@@ -516,6 +525,8 @@ var Backup = (function () {
 						var db = new SQL.Database();
 						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
 						db.run("CREATE TABLE discards(id text);");
+						db.run("CREATE TABLE archives(id text);");
+						db.run("CREATE TABLE comments(id text, count text);");
 						for (var i = 0; i < subs.length; i++) {
 							var result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
 							if (result.length == 0) {
@@ -526,6 +537,18 @@ var Backup = (function () {
 							discards = JSON.parse(discards);
 							for (var j = 0; j < discards.length; j++) {
 								db.run("INSERT INTO discards VALUES ('" + discards[j] + "');");
+							}
+						}
+						if (archives) {
+							archives = JSON.parse(archives);
+							for (var p = 0; p < archives.length; p++) {
+								db.run("INSERT INTO archives VALUES ('" + archives[p] + "');");
+							}
+						}
+						if (archives_comments) {
+							archives_comments = JSON.parse(archives_comments);
+							for (var r = 0; r < archives_comments.length; r++) {
+								db.run("INSERT INTO comments VALUES ('" + archives_comments[r].id + "', '" + archives_comments[r].comments + "');");
 							}
 						}
 						resolve(db);
@@ -1420,14 +1443,25 @@ var LinkSummary = (function () {
 			console.log(id);
 			// $("#"+id).css('display', 'none');
 			var archives = localStorage.getItem('archives');
+			var archives_comments = localStorage.getItem('archives_comments');
 			if (!archives) {
-				localStorage.setItem('archives', JSON.stringify([id]));
+				localStorage.setItem('archives', JSON.stringify([document.getElementById(id).outerHTML]));
+				localStorage.setItem('archives_comments', JSON.stringify([{
+					id: id,
+					comments: $("#summary-comment-num").text()
+				}]));
 			} else {
 				archives = JSON.parse(archives);
-				if (archives.indexOf(id) == -1) {
-					archives.push(id);
+				archives_comments = JSON.parse(archives_comments);
+				if (archives.indexOf(document.getElementById(id).outerHTML) == -1) {
+					archives.push(document.getElementById(id).outerHTML);
+					archives_comments.push({
+						id: id,
+						comments: $("#summary-comment-num").text()
+					});
 				}
 				localStorage.setItem('archives', JSON.stringify(archives));
+				localStorage.setItem('archives_comments', JSON.stringify(archives_comments));
 			}
 		});
 		UI.el.detailWrap.on('click', '.video-preview-btn', function (ev) {
@@ -2548,7 +2582,22 @@ var Subreddits = (function () {
 
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
 		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
-		// archive_btn
+		UI.el.body.on('click', ".archive_btn", function () {
+			console.log(123);
+			var archives = localStorage.getItem('archives');
+			var archiveDom = "";
+			if (archives) {
+				archives = JSON.parse(archives);
+				$(".sub--selected").removeClass('sub--selected');
+				for (var o = 0; o < archives.length; o++) {
+					var str = archives[o];
+					str = str.replace("link-selected", "");
+					archiveDom += str;
+				}
+			}
+			$("#main-wrap").html(archiveDom);
+		});
+		//
 
 		UI.el.body.on('click', "#btn-add-another-sub", function () {
 			var container = $("#subs-for-channel");
@@ -2849,7 +2898,8 @@ var ThemeSwitcher = (function () {
 'use strict';
 
 var URLs = {
-  init: window.location.protocol + '//www.reddit.com/',
+  init: 'https://www.reddit.com/',
+  // init: `${window.location.protocol}//www.reddit.com/`,
   end: '.json?jsonp=?',
   limitEnd: '.json?limit=30&jsonp=?'
 };

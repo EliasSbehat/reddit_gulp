@@ -263,15 +263,27 @@ var LinkSummary = (function() {
 			console.log(id);
 			// $("#"+id).css('display', 'none');
 			var archives = localStorage.getItem('archives');
+			var archives_comments = localStorage.getItem('archives_comments');
 			if (!archives) {
-				localStorage.setItem('archives', JSON.stringify([id]));
+				localStorage.setItem('archives', JSON.stringify([document.getElementById(id).outerHTML]));
+				localStorage.setItem('archives_comments', JSON.stringify([{
+					id: id,
+					comments: $("#summary-comment-num").text()
+				}]));
 			} else {
 				archives = JSON.parse(archives);
-				if (archives.indexOf(id) == -1) {
-					archives.push(id);
+				archives_comments = JSON.parse(archives_comments);
+				if (archives.indexOf(document.getElementById(id).outerHTML) == -1) {
+					archives.push(document.getElementById(id).outerHTML);
+					archives_comments.push({
+						id: id,
+						comments: $("#summary-comment-num").text()
+					});
 				}
 				localStorage.setItem('archives', JSON.stringify(archives));
+				localStorage.setItem('archives_comments', JSON.stringify(archives_comments));
 			}
+			
 		});
 		UI.el.detailWrap.on('click', '.video-preview-btn', function(ev) {
 			ev.preventDefault();

@@ -161,7 +161,7 @@ var Subreddits = (function () {
 			} else {
 				url = URLs.init + "r/" + sub + "/";
 			}
-			if (results.length>0) {
+			if (results.length > 0) {
 				Posts.load(url, "", results[0].regex);
 			} else {
 				Posts.load(url, "", "");
@@ -383,7 +383,22 @@ var Subreddits = (function () {
 
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
 		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
-		// archive_btn
+		UI.el.body.on('click', ".archive_btn", function () {
+			console.log(123);
+			var archives = localStorage.getItem('archives');
+			var archiveDom = "";
+			if (archives) {
+				archives = JSON.parse(archives);
+				$(".sub--selected").removeClass('sub--selected');
+				for (var o = 0; o < archives.length; o++) {
+					var str = archives[o];
+					str = str.replace("link-selected", "");
+					archiveDom += str;
+				}
+			}
+			$("#main-wrap").html(archiveDom);
+		});
+		// 
 
 		UI.el.body.on('click', "#btn-add-another-sub", function () {
 			var container = $("#subs-for-channel");
@@ -398,12 +413,12 @@ var Subreddits = (function () {
 			$(".main-view").removeClass("show-view");
 			$(".detail-view").addClass("show-view");
 		});
-		UI.el.mainWrap.on('click', '.btn-edit-sub', function() {
+		UI.el.mainWrap.on('click', '.btn-edit-sub', function () {
 			var originalSubreddit = $(this).attr('rid');
 			var originalResult = list.filter(item => item.subreddit.toLowerCase() === originalSubreddit.toLowerCase());
 			var originalRegex = originalResult[0].regex;
 			Modal.show(template.formUpdate);
-			setTimeout(function() {
+			setTimeout(function () {
 				localStorage.setItem("update_sub", originalSubreddit);
 				$('#txt-update-sub').val(originalSubreddit);
 				$('#txt-update-reg').val(originalRegex);
