@@ -35,8 +35,9 @@ var LinkSummary = (function() {
 			<div id='summary-preview'>
 			</div>
 			<div id='summary-btn'>
-				<a class='btn mrgn-x no-ndrln'
+				<a class='btn mrgn-x no-ndrln save-tw'
 					  id='share-tw'
+					  rid='{{name}}'
 					  href='#'>Save</a>
 				<a class='btn mrgn-x no-ndrln'
 				   id='share-tw'
@@ -76,8 +77,13 @@ var LinkSummary = (function() {
 				selfText = summaryConverter1.makeHtml(data.selftext);
 				Posts.getList()[postID].selftext = selfText;
 				Posts.getList()[postID].selftextParsed = true;
+				
 			}
-			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + selfText + "</section>";
+			var searchString = "&amp;#x200B;";
+			var replacementString = " "; 
+			let re = new RegExp(searchString, 'g');
+			let newString = selfText.replace(re, replacementString);
+			summaryHTML += "<section id='selftext' class='pad-x mrgn-x mrgn-y'>" + newString + "</section>";
 		} 
 		// else { // if it's an image
 			var linkURL = Posts.getList()[postID].url;
@@ -249,6 +255,22 @@ var LinkSummary = (function() {
 					discards.push(id);
 				}
 				localStorage.setItem('discards', JSON.stringify(discards));
+			}
+		});
+		UI.el.detailWrap.on('click', '.save-tw', function(ev) {
+			ev.preventDefault();
+			var id = $(this).attr('rid');
+			console.log(id);
+			// $("#"+id).css('display', 'none');
+			var archives = localStorage.getItem('archives');
+			if (!archives) {
+				localStorage.setItem('archives', JSON.stringify([id]));
+			} else {
+				archives = JSON.parse(archives);
+				if (archives.indexOf(id) == -1) {
+					archives.push(id);
+				}
+				localStorage.setItem('archives', JSON.stringify(archives));
 			}
 		});
 		UI.el.detailWrap.on('click', '.video-preview-btn', function(ev) {

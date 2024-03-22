@@ -383,6 +383,7 @@ var Subreddits = (function () {
 
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
 		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
+		// archive_btn
 
 		UI.el.body.on('click', "#btn-add-another-sub", function () {
 			var container = $("#subs-for-channel");
