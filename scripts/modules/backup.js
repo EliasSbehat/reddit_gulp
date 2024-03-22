@@ -131,6 +131,14 @@ var Backup = (function () {
 					var contents = db.exec("SELECT * FROM subreddits");
 					var threads = db.exec("SELECT * FROM threads");
 					console.log(contents, threads);
+					var defaults = [];
+					for (var j = 0; j < contents[0].values.length; j++) {
+						defaults.push({
+							"subreddit": contents[0].values[j][0],
+							"regex": contents[0].values[j][1]
+						});
+					}
+					loadData({subreddits:defaults});
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -141,33 +149,48 @@ var Backup = (function () {
 			$$.id('file-chooser').click();
 		});
 		UI.el.body.on('click', '#btn-download-data', () => {
-			const arr = JSON.parse(window.localStorage.getItem("dbBackup"));
-			var blob = new Blob([new Uint8Array(arr)], { type: "application/octet-stream" });
-			var url = URL.createObjectURL(blob);
-			var a = document.createElement("a");
-			a.href = url;
-			a.download = "db.sqlite";
-			a.click();
-			console.log('Database downloaded successfully');
-			// var openRequest = indexedDB.open(DB_NAME, 1);
-			// openRequest.onsuccess = function (event) {
-			// 	var database = event.target.result;
-			// 	var transaction = database.transaction([DB_NAME], "readwrite");
-			// 	var objectStore = transaction.objectStore(DB_NAME);
-			// 	var getRequest = objectStore.getAll(); // Get the binary array
-			// 	getRequest.onsuccess = function (event) {
-			// 		console.log(event);
-			// 		var binaryArray = event.target.result;
-			// 		var blob = new Blob([binaryArray], { type: 'application/octet-stream' });
-			// 		var a = window.document.createElement('a');
-			// 		a.href = window.URL.createObjectURL(blob);
-			// 		a.download = 'backup.sqlite';
+			const initSqlJs = window.initSqlJs;
+			var DB_NAME = 'reddit_db';
+			const initDb = () => {
+				return new Promise((resolve, reject) => {
+					initSqlJs({
+						locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.0/dist/${file}`
+					}).then(SQL => {
+						var subs = Store.getItem("subreeddits");
+						if (subs) {
+							subs = JSON.parse(subs);
+						}
+						const db = new SQL.Database();
+						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
+						db.run("CREATE TABLE threads(id text);");
+						for (var i = 0; i < subs.length; i++) {
+							const result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
+							if (result.length == 0) {
+								db.run("INSERT INTO subreddits VALUES ('" + subs[i].subreddit + "', '" + subs[i].regex + "');");
+							}
+						}
+						db.run("INSERT INTO threads VALUES ('testid');");
+						resolve(db);
+					}).catch(error => {
+						reject(error);
+					});
+				});
+			};
+			initDb().then((db) => {
+				var binaryArray = db.export(); // Convert the db to binary array
+				window.localStorage.setItem("dbBackup", JSON.stringify([...binaryArray]));
+				const arr = JSON.parse(window.localStorage.getItem("dbBackup"));
+				var blob = new Blob([new Uint8Array(arr)], { type: "application/octet-stream" });
+				var url = URL.createObjectURL(blob);
+				var a = document.createElement("a");
+				a.href = url;
+				a.download = "db.sqlite";
+				a.click();
+				console.log('Database downloaded successfully');
+			}).catch(error => {
+				console.error("Error initializing database:", error);
+			});
 
-			// 		document.body.appendChild(a);
-			// 		a.click();
-			// 		document.body.removeChild(a);
-			// 	};
-			// };
 		});
 	};
 

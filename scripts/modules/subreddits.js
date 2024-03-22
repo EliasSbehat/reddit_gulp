@@ -189,9 +189,9 @@ var Subreddits = (function () {
 	};
 	var update = function (newSub, regex) {
 		var originalSub = localStorage.getItem("update_sub");
-		if (listHasSub(newSub)) {
-			return;
-		}
+		// if (listHasSub(newSub)) {
+		// 	return;
+		// }
 		_delete(originalSub);
 		detach(originalSub);
 		insert(newSub, regex);
@@ -253,12 +253,12 @@ var Subreddits = (function () {
 			Anim.shakeForm();
 			return;
 		}
-		if (listHasSub(subName)) {
-			txtSub.value = "";
-			txtSub.setAttribute("placeholder", subName + " already added!");
-			Anim.shakeForm();
-			return;
-		}
+		// if (listHasSub(subName)) {
+		// 	txtSub.value = "";
+		// 	txtSub.setAttribute("placeholder", subName + " already added!");
+		// 	Anim.shakeForm();
+		// 	return;
+		// }
 
 		subName = subName.trim();
 

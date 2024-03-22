@@ -18,7 +18,7 @@ var Posts = (function () {
 
 	const template = `
 		{{#children}}
-			<article class='link-wrap flx w-100'>
+			<article class='link-wrap flx w-100' id='{{data.name}}'>
 				<div class='link flx no-ndrln pad-y pad-x js-link' data-id='{{data.id}}'>
 					<div class='link-thumb'>
 						<div style='background-image: url({{data.thumbnail}})'></div>
@@ -270,6 +270,7 @@ var Posts = (function () {
 					selftext: post.data.selftext,
 					created_utc: post.data.created_utc,
 					domain: post.data.domain,
+					name: post.data.name,
 					subreddit: post.data.subreddit,
 					num_comments: post.data.num_comments,
 					url: post.data.url,

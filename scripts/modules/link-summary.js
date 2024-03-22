@@ -42,8 +42,9 @@ var LinkSummary = (function() {
 				   id='share-tw'
 				   target='_blank'
 				   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>
-				<a class='btn mrgn-x no-ndrln'
-				   id='share-tw'
+				<a class='btn mrgn-x no-ndrln discard-tw'
+				   id='discard-tw'
+				   rid='{{name}}'
 				   href='#'>Discard</a>
 			</div>
 			<div class='ls-extra flx flx-spc-btwn-x txt-bld'>
@@ -108,8 +109,8 @@ var LinkSummary = (function() {
 					for (var i=0;i<gallery_data.items.length;i++) {
 						summaryHTML += `
 						<div class="card_gallery">
-							<a href="${media_metadata[gallery_data.items[i].media_id].s.u}" target="_blank" class="preview-container blck js-img">
-							<img src="${media_metadata[gallery_data.items[i].media_id].p[0].u}" class="cover_gallery" alt="">
+							<a href="#preview" target="_blank" class="preview-container blck js-img-preview" data-img="${media_metadata[gallery_data.items[i].media_id].s.u}">
+							<img src="${media_metadata[gallery_data.items[i].media_id].p[0].u}" class="cover_gallery image-preview" alt="">
 							</a>
 						</div>`;
 					}
@@ -230,6 +231,22 @@ var LinkSummary = (function() {
 		UI.el.detailWrap.on('click', '.js-img-preview', function(ev) {
 			ev.preventDefault();
 			Modal.showImageViewer(this.dataset.img);
+		});
+		UI.el.detailWrap.on('click', '.discard-tw', function(ev) {
+			ev.preventDefault();
+			var id = $(this).attr('rid');
+			console.log(id);
+			$("#"+id).css('display', 'none');
+			var discards = localStorage.getItem('discards');
+			if (!discards) {
+				localStorage.setItem('discards', JSON.stringify([id]));
+			} else {
+				discards = JSON.parse(discards);
+				if (discards.indexOf(id) == -1) {
+					discards.push(id);
+				}
+				localStorage.setItem('discards', JSON.stringify(discards));
+			}
 		});
 		UI.el.detailWrap.on('click', '.video-preview-btn', function(ev) {
 			ev.preventDefault();

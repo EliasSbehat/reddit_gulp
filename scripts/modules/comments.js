@@ -119,10 +119,10 @@ const Comments = (function() {
 		for (var k=0;k<allhref.length;k++) {
 			var atag = allhref[k];
 			var href = $(atag).attr('href');
-			if (href.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+			if (href.match(/\.(jpeg|jpg|gif|png)/) != null) {
 				if (!$(atag).attr('class')) {
 					console.log($(atag));
-					$(atag).prepend(`<img class="video-preview" 
+					$(atag).html(`<img class="video-preview" 
 					src="${href}"/>`);
 				}
 			}

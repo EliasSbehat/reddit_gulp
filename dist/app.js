@@ -367,6 +367,8 @@ var UI = (function () {
 
 'use strict';
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
 var Backup = (function () {
 
 	var update = 1;
@@ -470,6 +472,14 @@ var Backup = (function () {
 					var contents = db.exec("SELECT * FROM subreddits");
 					var threads = db.exec("SELECT * FROM threads");
 					console.log(contents, threads);
+					var defaults = [];
+					for (var j = 0; j < contents[0].values.length; j++) {
+						defaults.push({
+							"subreddit": contents[0].values[j][0],
+							"regex": contents[0].values[j][1]
+						});
+					}
+					loadData({ subreddits: defaults });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -480,33 +490,49 @@ var Backup = (function () {
 			$$.id('file-chooser').click();
 		});
 		UI.el.body.on('click', '#btn-download-data', function () {
-			var arr = JSON.parse(window.localStorage.getItem("dbBackup"));
-			var blob = new Blob([new Uint8Array(arr)], { type: "application/octet-stream" });
-			var url = URL.createObjectURL(blob);
-			var a = document.createElement("a");
-			a.href = url;
-			a.download = "db.sqlite";
-			a.click();
-			console.log('Database downloaded successfully');
-			// var openRequest = indexedDB.open(DB_NAME, 1);
-			// openRequest.onsuccess = function (event) {
-			// 	var database = event.target.result;
-			// 	var transaction = database.transaction([DB_NAME], "readwrite");
-			// 	var objectStore = transaction.objectStore(DB_NAME);
-			// 	var getRequest = objectStore.getAll(); // Get the binary array
-			// 	getRequest.onsuccess = function (event) {
-			// 		console.log(event);
-			// 		var binaryArray = event.target.result;
-			// 		var blob = new Blob([binaryArray], { type: 'application/octet-stream' });
-			// 		var a = window.document.createElement('a');
-			// 		a.href = window.URL.createObjectURL(blob);
-			// 		a.download = 'backup.sqlite';
-
-			// 		document.body.appendChild(a);
-			// 		a.click();
-			// 		document.body.removeChild(a);
-			// 	};
-			// };
+			var initSqlJs = window.initSqlJs;
+			var DB_NAME = 'reddit_db';
+			var initDb = function initDb() {
+				return new Promise(function (resolve, reject) {
+					initSqlJs({
+						locateFile: function locateFile(file) {
+							return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.0/dist/' + file;
+						}
+					}).then(function (SQL) {
+						var subs = Store.getItem("subreeddits");
+						if (subs) {
+							subs = JSON.parse(subs);
+						}
+						var db = new SQL.Database();
+						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
+						db.run("CREATE TABLE threads(id text);");
+						for (var i = 0; i < subs.length; i++) {
+							var result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
+							if (result.length == 0) {
+								db.run("INSERT INTO subreddits VALUES ('" + subs[i].subreddit + "', '" + subs[i].regex + "');");
+							}
+						}
+						db.run("INSERT INTO threads VALUES ('testid');");
+						resolve(db);
+					})['catch'](function (error) {
+						reject(error);
+					});
+				});
+			};
+			initDb().then(function (db) {
+				var binaryArray = db['export'](); // Convert the db to binary array
+				window.localStorage.setItem("dbBackup", JSON.stringify([].concat(_toConsumableArray(binaryArray))));
+				var arr = JSON.parse(window.localStorage.getItem("dbBackup"));
+				var blob = new Blob([new Uint8Array(arr)], { type: "application/octet-stream" });
+				var url = URL.createObjectURL(blob);
+				var a = document.createElement("a");
+				a.href = url;
+				a.download = "db.sqlite";
+				a.click();
+				console.log('Database downloaded successfully');
+			})['catch'](function (error) {
+				console.error("Error initializing database:", error);
+			});
 		});
 	};
 
@@ -871,10 +897,10 @@ var Comments = (function () {
 		for (var k = 0; k < allhref.length; k++) {
 			var atag = allhref[k];
 			var href = $(atag).attr('href');
-			if (href.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+			if (href.match(/\.(jpeg|jpg|gif|png)/) != null) {
 				if (!$(atag).attr('class')) {
 					console.log($(atag));
-					$(atag).prepend('<img class="video-preview" \n\t\t\t\t\tsrc="' + href + '"/>');
+					$(atag).html('<img class="video-preview" \n\t\t\t\t\tsrc="' + href + '"/>');
 				}
 			}
 		}
@@ -1190,7 +1216,7 @@ var Header = (function () {
 
 var LinkSummary = (function () {
 
-	var template = "\n\t\t<section id='link-summary'>\n\t\t\t" + UI.template.closeThreadButton + "\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
+	var template = "\n\t\t<section id='link-summary'>\n\t\t\t" + UI.template.closeThreadButton + "\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln discard-tw'\n\t\t\t\t   id='discard-tw'\n\t\t\t\t   rid='{{name}}'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
 
 	var setPostSummary = function setPostSummary(data, postID) {
 		if (!data.link) {
@@ -1235,7 +1261,7 @@ var LinkSummary = (function () {
 				} else if (isGallery) {
 					summaryHTML += '<div class="wrapper_gallery">';
 					for (var i = 0; i < gallery_data.items.length; i++) {
-						summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\" target=\"_blank\" class=\"preview-container blck js-img\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
+						summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"#preview\" target=\"_blank\" class=\"preview-container blck js-img-preview\" data-img=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery image-preview\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
 					}
 					summaryHTML += '</div>';
 				} else if (imageLink) {
@@ -1350,6 +1376,22 @@ var LinkSummary = (function () {
 		UI.el.detailWrap.on('click', '.js-img-preview', function (ev) {
 			ev.preventDefault();
 			Modal.showImageViewer(this.dataset.img);
+		});
+		UI.el.detailWrap.on('click', '.discard-tw', function (ev) {
+			ev.preventDefault();
+			var id = $(this).attr('rid');
+			console.log(id);
+			$("#" + id).css('display', 'none');
+			var discards = localStorage.getItem('discards');
+			if (!discards) {
+				localStorage.setItem('discards', JSON.stringify([id]));
+			} else {
+				discards = JSON.parse(discards);
+				if (discards.indexOf(id) == -1) {
+					discards.push(id);
+				}
+				localStorage.setItem('discards', JSON.stringify(discards));
+			}
 		});
 		UI.el.detailWrap.on('click', '.video-preview-btn', function (ev) {
 			ev.preventDefault();
@@ -1639,7 +1681,7 @@ var Modal = (function () {
 
 var Posts = (function () {
 
-	var template = '\n\t\t{{#children}}\n\t\t\t<article class=\'link-wrap flx w-100\'>\n\t\t\t\t<div class=\'link flx no-ndrln pad-y pad-x js-link\' data-id=\'{{data.id}}\'>\n\t\t\t\t\t<div class=\'link-thumb\'>\n\t\t\t\t\t\t<div style=\'background-image: url({{data.thumbnail}})\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'link-info\'>\n\t\t\t\t\t\t<a href=\'{{data.url}}\'\n\t\t\t\t\t\t   data-id=\'{{data.id}}\'\n\t\t\t\t\t\t   target=\'_blank\'\n\t\t\t\t\t\t   class=\'link-title no-ndrln blck js-post-title\'>\n\t\t\t\t\t\t{{data.title}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<div class=\'link-domain\'>{{data.domain}}</div>\n\t\t\t\t\t\t<span class=\'link-sub\'>{{data.subreddit}}</span>\n\t\t\t\t\t\t{{#data.over_18}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld nsfw\'>NSFW</span>\n\t\t\t\t\t\t{{/data.over_18}}\n\t\t\t\t\t\t{{#data.stickied}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld stickied\'>Stickied</span>\n\t\t\t\t\t\t{{/data.stickied}}\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\tsubmitted \n\t\t\t\t\t\t\t<time title="{{data.unix_time}}" class="live-timestamp">\n\t\t\t\t\t\t\t\t{{data.time_ago}}\n\t\t\t\t\t\t\t</time> by \n\t\t\t\t\t\t\t<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">\n\t\t\t\t\t\t\t{{data.author}}\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t<span class="userattrs"></span>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\t<a href="{{data.url}}" data-event-action="comments" class="bylink comments may-blank" rel="nofollow">{{data.comments}}</a>\n\t\t\t\t\t\t\t<a href="#">save</a>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<a href=\'#comments:{{data.id}}\' class=\'to-comments w-15 flx flx-cntr-y btn-basic\'>\n\t\t\t\t\t<div class=\'comments-icon\'></div>\n\t\t\t\t</a>\n\t\t\t</article>\n\t\t{{/children}}\n\t\t<button id=\'btn-load-more-posts\'\n\t\t\t\tclass=\'btn blck mrgn-cntr-x\'>More</button>\n\t\t<div id=\'main-overflow\'></div>';
+	var template = '\n\t\t{{#children}}\n\t\t\t<article class=\'link-wrap flx w-100\' id=\'{{data.name}}\'>\n\t\t\t\t<div class=\'link flx no-ndrln pad-y pad-x js-link\' data-id=\'{{data.id}}\'>\n\t\t\t\t\t<div class=\'link-thumb\'>\n\t\t\t\t\t\t<div style=\'background-image: url({{data.thumbnail}})\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'link-info\'>\n\t\t\t\t\t\t<a href=\'{{data.url}}\'\n\t\t\t\t\t\t   data-id=\'{{data.id}}\'\n\t\t\t\t\t\t   target=\'_blank\'\n\t\t\t\t\t\t   class=\'link-title no-ndrln blck js-post-title\'>\n\t\t\t\t\t\t{{data.title}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<div class=\'link-domain\'>{{data.domain}}</div>\n\t\t\t\t\t\t<span class=\'link-sub\'>{{data.subreddit}}</span>\n\t\t\t\t\t\t{{#data.over_18}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld nsfw\'>NSFW</span>\n\t\t\t\t\t\t{{/data.over_18}}\n\t\t\t\t\t\t{{#data.stickied}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld stickied\'>Stickied</span>\n\t\t\t\t\t\t{{/data.stickied}}\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\tsubmitted \n\t\t\t\t\t\t\t<time title="{{data.unix_time}}" class="live-timestamp">\n\t\t\t\t\t\t\t\t{{data.time_ago}}\n\t\t\t\t\t\t\t</time> by \n\t\t\t\t\t\t\t<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">\n\t\t\t\t\t\t\t{{data.author}}\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t<span class="userattrs"></span>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\t<a href="{{data.url}}" data-event-action="comments" class="bylink comments may-blank" rel="nofollow">{{data.comments}}</a>\n\t\t\t\t\t\t\t<a href="#">save</a>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<a href=\'#comments:{{data.id}}\' class=\'to-comments w-15 flx flx-cntr-y btn-basic\'>\n\t\t\t\t\t<div class=\'comments-icon\'></div>\n\t\t\t\t</a>\n\t\t\t</article>\n\t\t{{/children}}\n\t\t<button id=\'btn-load-more-posts\'\n\t\t\t\tclass=\'btn blck mrgn-cntr-x\'>More</button>\n\t\t<div id=\'main-overflow\'></div>';
 
 	var loading = false,
 	    list = {},
@@ -1850,6 +1892,7 @@ var Posts = (function () {
 					selftext: post.data.selftext,
 					created_utc: post.data.created_utc,
 					domain: post.data.domain,
+					name: post.data.name,
 					subreddit: post.data.subreddit,
 					num_comments: post.data.num_comments,
 					url: post.data.url,
@@ -2263,9 +2306,9 @@ var Subreddits = (function () {
 	};
 	var update = function update(newSub, regex) {
 		var originalSub = localStorage.getItem("update_sub");
-		if (listHasSub(newSub)) {
-			return;
-		}
+		// if (listHasSub(newSub)) {
+		// 	return;
+		// }
 		_delete(originalSub);
 		detach(originalSub);
 		insert(newSub, regex);
@@ -2329,12 +2372,12 @@ var Subreddits = (function () {
 			Anim.shakeForm();
 			return;
 		}
-		if (listHasSub(subName)) {
-			txtSub.value = "";
-			txtSub.setAttribute("placeholder", subName + " already added!");
-			Anim.shakeForm();
-			return;
-		}
+		// if (listHasSub(subName)) {
+		// 	txtSub.value = "";
+		// 	txtSub.setAttribute("placeholder", subName + " already added!");
+		// 	Anim.shakeForm();
+		// 	return;
+		// }
 
 		subName = subName.trim();
 
@@ -2791,8 +2834,6 @@ var URLs = {
 // Init all modules listeners
 "use strict";
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
 UI.initListeners();
 Posts.initListeners();
 Comments.initListeners();
@@ -2866,7 +2907,6 @@ var initDb = function initDb() {
 };
 
 initDb().then(function (db) {
-	saveDB(db);
 	console.log("Database initialization successful.");
 	Subreddits.loadSaved(defaults);
 	console.log(defaults);
@@ -2926,23 +2966,5 @@ initDb().then(function (db) {
 })["catch"](function (error) {
 	console.error("Error initializing database:", error);
 });
-function saveDB(db) {
-	var binaryArray = db["export"](); // Convert the db to binary array
-	window.localStorage.setItem("dbBackup", JSON.stringify([].concat(_toConsumableArray(binaryArray))));
 
-	// // Save to IndexedDB
-	// var openRequest = indexedDB.open(DB_NAME, 1);
-	// openRequest.onsuccess = function (event) {
-	// 	var database = event.target.result;
-	// 	var transaction = database.transaction([DB_NAME], "readwrite");
-	// 	var objectStore = transaction.objectStore(DB_NAME);
-	// 	objectStore.clear(); // Clear existing entries
-	// 	const key = Date.now();
-	// 	objectStore.add(binaryArray, key); // Add the binaryArray to object store
-	// };
-	// openRequest.onupgradeneeded = function(event) {
-	// 	var database = event.target.result;
-	// 	database.createObjectStore(DB_NAME); // Create object store if it doesn't exist
-	// };
-}
 // Subreddits.loadSaved();

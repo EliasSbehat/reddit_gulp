@@ -99,7 +99,6 @@ const initDb = () => {
 };
 
 initDb().then((db) => {
-	saveDB(db);
 	console.log("Database initialization successful.");
 	Subreddits.loadSaved(defaults);
 	console.log(defaults);
@@ -158,24 +157,6 @@ initDb().then((db) => {
 }).catch(error => {
 	console.error("Error initializing database:", error);
 });
-function saveDB(db) {
-	var binaryArray = db.export(); // Convert the db to binary array
-	window.localStorage.setItem("dbBackup", JSON.stringify([...binaryArray]));
 
-	// // Save to IndexedDB
-	// var openRequest = indexedDB.open(DB_NAME, 1);
-	// openRequest.onsuccess = function (event) {
-	// 	var database = event.target.result;
-	// 	var transaction = database.transaction([DB_NAME], "readwrite");
-	// 	var objectStore = transaction.objectStore(DB_NAME);
-	// 	objectStore.clear(); // Clear existing entries
-	// 	const key = Date.now();
-	// 	objectStore.add(binaryArray, key); // Add the binaryArray to object store
-	// };
-	// openRequest.onupgradeneeded = function(event) {
-	// 	var database = event.target.result;
-	// 	database.createObjectStore(DB_NAME); // Create object store if it doesn't exist
-	// };
-}
 // Subreddits.loadSaved();
 
