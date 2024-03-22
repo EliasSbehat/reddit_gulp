@@ -844,7 +844,6 @@ var Comments = (function () {
 			if (c.kind !== "t1") {
 				continue;
 			}
-
 			var html = converter.makeHtml(c.data.body),
 			    isPoster = Posts.getList()[currentThread].author === c.data.author,
 			    permalink = URLs.init + Posts.getList()[currentThread].link + c.data.id,
@@ -867,6 +866,17 @@ var Comments = (function () {
 
 		if (idParent) {
 			Posts.getLoaded()[idParent] = com;
+		}
+		var allhref = UI.el.detailWrap.find('a');
+		for (var k = 0; k < allhref.length; k++) {
+			var atag = allhref[k];
+			var href = $(atag).attr('href');
+			if (href.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+				if (!$(atag).attr('class')) {
+					console.log($(atag));
+					$(atag).prepend('<img class="video-preview" \n\t\t\t\t\tsrc="' + href + '"/>');
+				}
+			}
 		}
 		UI.el.detailWrap.find('a').attr('target', '_blank');
 	};
@@ -1214,7 +1224,6 @@ var LinkSummary = (function () {
 			var gallery_data = Posts.getList()[postID].gallery_data;
 			var media_metadata = Posts.getList()[postID].media_metadata;
 			var domain = Posts.getList()[postID].domain;
-			console.log(domain);
 			if (linkURL) {
 				// if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);

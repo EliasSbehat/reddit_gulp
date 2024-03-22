@@ -70,7 +70,6 @@ const Comments = (function() {
 			if (c.kind !== "t1") {
 				continue;
 			}
-			
 			var html = converter.makeHtml(c.data.body),
 				isPoster = Posts.getList()[currentThread].author === c.data.author,
 				permalink = URLs.init + Posts.getList()[currentThread].link + c.data.id,
@@ -115,6 +114,18 @@ const Comments = (function() {
 
 		if (idParent) {
 			Posts.getLoaded()[idParent] = com;
+		}
+		var allhref = UI.el.detailWrap.find('a');
+		for (var k=0;k<allhref.length;k++) {
+			var atag = allhref[k];
+			var href = $(atag).attr('href');
+			if (href.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+				if (!$(atag).attr('class')) {
+					console.log($(atag));
+					$(atag).prepend(`<img class="video-preview" 
+					src="${href}"/>`);
+				}
+			}
 		}
 		UI.el.detailWrap.find('a')
 			.attr('target', '_blank');

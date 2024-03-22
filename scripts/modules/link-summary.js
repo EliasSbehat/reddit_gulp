@@ -89,7 +89,6 @@ var LinkSummary = (function() {
 			var gallery_data = Posts.getList()[postID].gallery_data;
 			var media_metadata = Posts.getList()[postID].media_metadata;
 			var domain = Posts.getList()[postID].domain;
-			console.log(domain);
 			if (linkURL) { // if it's a YouTube video
 				var youTubeID = getYouTubeVideoIDfromURL(linkURL);
 
