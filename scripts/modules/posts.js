@@ -24,12 +24,11 @@ var Posts = (function () {
 						<div style='background-image: url({{data.thumbnail}})'></div>
 					</div>
 					<div class='link-info'>
-						<a href='{{data.url}}'
+						<p
 						   data-id='{{data.id}}'
-						   target='_blank'
 						   class='link-title no-ndrln blck js-post-title'>
 						{{data.title}}
-						</a>
+						</p>
 						<div class='link-domain'>{{data.domain}}</div>
 						<span class='link-sub'>{{data.subreddit}}</span>
 						{{#data.over_18}}
@@ -41,7 +40,7 @@ var Posts = (function () {
 						<p class="tagline ">
 							submitted 
 							<time title="{{data.unix_time}}" class="live-timestamp">
-								{{data.time_ago}}
+								{{data.time_ago}} ({{data.timestamp}})
 							</time> by 
 							<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">
 							{{data.author}}
@@ -120,10 +119,24 @@ var Posts = (function () {
 			url: baseUrl + Sorting.get() + URLs.limitEnd + paging,
 			success: (result) => {
 				if (regex) {
-					var regexData = new RegExp(regex, 'i');
-					let filteredPosts = result;
-					filteredPosts.data.children = result.data.children.filter(post => regexData.test(post.data.title));
-					show(filteredPosts, paging);
+					if (regex.length > 1) {
+						let filteredPosts = result;
+						var postresAry = [];
+						for (var w = 0; w < regex.length; w++) {
+							var regexData = new RegExp(regex[w], 'i');
+							var postres = result.data.children.filter(post => regexData.test(post.data.title));
+							for (var e = 0; e < postres.length; e++) {
+								postresAry.push(postres[e]);
+							}
+						}
+						filteredPosts.data.children = postresAry;
+						show(filteredPosts, paging);
+					} else {
+						var regexData = new RegExp(regex, 'i');
+						let filteredPosts = result;
+						filteredPosts.data.children = result.data.children.filter(post => regexData.test(post.data.title));
+						show(filteredPosts, paging);
+					}
 				} else {
 					show(result, paging);
 				}
@@ -144,12 +157,24 @@ var Posts = (function () {
 	var render = function (links, paging) { // links: API raw data
 		var modifiedLinks = links;
 		var childrens = [];
+		var comments = Store.getItem("comments");
+		if (comments) {
+			comments = JSON.parse(comments);
+		}
 		for (var i = 0; i < links.children.length; i++) {
 			var linkChild = links.children[i];
+			var firstLoadedComment = "";
+			if (comments) {
+				firstLoadedComment = comments.filter(obj => obj.id === links.children[i].data.name);
+				if (firstLoadedComment.length > 0) {
+					firstLoadedComment = " (" + firstLoadedComment[0].count.split(" ")[0] + ")";
+				}
+			}
 			Object.assign(linkChild.data, {
 				time_ago: timeAgo(links.children[i].data.created_utc),
 				unix_time: unixTime(links.children[i].data.created_utc),
-				comments: (links.children[i].data.num_comments == 1) ? "comment" : links.children[i].data.num_comments + " comments"
+				timestamp: timestamp(links.children[i].data.created_utc),
+				comments: (links.children[i].data.num_comments == 1) ? "comment" + firstLoadedComment : links.children[i].data.num_comments + " comments" + firstLoadedComment
 			});
 			childrens.push(linkChild);
 		}
@@ -233,7 +258,7 @@ var Posts = (function () {
 		}
 
 		if (linksCount < 30) { // Remove 'More links' button if there are less than 30 links
-			el.moreButton().remove();
+			// el.moreButton().remove();
 		}
 
 		if (!is.desktop) {
@@ -402,6 +427,17 @@ var Posts = (function () {
 			date.getUTCFullYear() + ' UTC';
 		return formattedDate;
 	};
+	var timestamp = function (unix_timestamp) {
+		let date = new Date(unix_timestamp * 1000);
+		let year = date.getUTCFullYear();
+		let month = date.getUTCMonth() + 1;  // JavaScript starts counting months from 0.
+		let day = date.getUTCDate();
+		let hours = date.getUTCHours();
+		let minutes = date.getUTCMinutes();
+		let seconds = date.getUTCSeconds();
+		let formattedTime = `${hours}:${minutes}:${seconds} ${year}-${month}-${day}`;
+		return formattedTime;
+	};
 	// Exports
 	return {
 		initListeners: initListeners,
@@ -416,6 +452,7 @@ var Posts = (function () {
 		setList: setList,
 		timeAgo: timeAgo,
 		unixTime: unixTime,
+		timestamp: timestamp,
 		getLoaded: getLoaded
 	};
 

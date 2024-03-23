@@ -100,7 +100,8 @@ const Comments = (function() {
 				c.data.replies.data.children[0].kind !== "more") {
 				comment.append(
 					$("<button/>")
-						.addClass("btn blck mrgn-cntr-x comments-button js-reply-button")
+						.addClass("btn blck comments-button js-reply-button")
+						// .addClass("btn blck mrgn-cntr-x comments-button js-reply-button")
 						.attr("data-comment-id", c.data.id)
 						.text("See replies ("+c.data.replies.data.children.length+")")
 				);

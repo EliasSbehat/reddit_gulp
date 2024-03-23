@@ -422,6 +422,9 @@ var Backup = (function () {
 		if (data.archives) {
 			Store.setItem("archives", JSON.stringify(data.archives));
 		}
+		if (data.comments) {
+			Store.setItem("comments", JSON.stringify(data.comments));
+		}
 		refresh = true;
 		// if (data.channels) {
 		// 	refresh = true;
@@ -478,23 +481,40 @@ var Backup = (function () {
 					var contents = db.exec("SELECT * FROM subreddits");
 					var discards = db.exec("SELECT * FROM discards");
 					var archives = db.exec("SELECT * FROM archives");
-					console.log(contents, discards, archives);
+					var comments = db.exec("SELECT * FROM comments");
+					console.log(contents, discards, archives, comments);
 					var defaults = [];
-					for (var j = 0; j < contents[0].values.length; j++) {
-						defaults.push({
-							"subreddit": contents[0].values[j][0],
-							"regex": contents[0].values[j][1]
-						});
+					if (contents.length > 0) {
+						for (var j = 0; j < contents[0].values.length; j++) {
+							defaults.push({
+								"subreddit": contents[0].values[j][0],
+								"regex": contents[0].values[j][1]
+							});
+						}
+					}
+					var commentsData = [];
+					if (comments.length > 0) {
+						for (var u = 0; u < comments[0].values.length; u++) {
+							commentsData.push({
+								"id": comments[0].values[u][0],
+								"count": comments[0].values[u][1],
+								"subreddit": comments[0].values[u][2]
+							});
+						}
 					}
 					var discardsData = [];
-					for (var k = 0; k < discards[0].values.length; k++) {
-						discardsData.push(discards[0].values[k][0]);
+					if (discards.length > 0) {
+						for (var k = 0; k < discards[0].values.length; k++) {
+							discardsData.push(discards[0].values[k][0]);
+						}
 					}
 					var archivesData = [];
-					for (var q = 0; q < archives[0].values.length; q++) {
-						archivesData.push(archives[0].values[q][0]);
+					if (archives.length > 0) {
+						for (var q = 0; q < archives[0].values.length; q++) {
+							archivesData.push(archives[0].values[q][0]);
+						}
 					}
-					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData });
+					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData, comments: commentsData });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -526,7 +546,7 @@ var Backup = (function () {
 						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
 						db.run("CREATE TABLE discards(id text);");
 						db.run("CREATE TABLE archives(id text);");
-						db.run("CREATE TABLE comments(id text, count text);");
+						db.run("CREATE TABLE comments(id text, count text, subreddit text);");
 						for (var i = 0; i < subs.length; i++) {
 							var result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
 							if (result.length == 0) {
@@ -548,7 +568,7 @@ var Backup = (function () {
 						if (archives_comments) {
 							archives_comments = JSON.parse(archives_comments);
 							for (var r = 0; r < archives_comments.length; r++) {
-								db.run("INSERT INTO comments VALUES ('" + archives_comments[r].id + "', '" + archives_comments[r].comments + "');");
+								db.run("INSERT INTO comments VALUES ('" + archives_comments[r].id + "', '" + archives_comments[r].comments + "', '" + archives_comments[r].subreddit + "');");
 							}
 						}
 						resolve(db);
@@ -919,7 +939,9 @@ var Comments = (function () {
 			};
 			var comment = $("<div/>").addClass("comment-wrap").attr('tabindex', '0').append($('<div/>').append($("<div/>").addClass("comment-data").append($("<span/>").addClass(isPoster ? "comment-poster" : "comment-author").text(c.data.author)).append($("<a/>").addClass("comment-info no-ndrln").attr(commentLink).text(timeSince(now, c.data.created_utc)))).append($("<div/>").addClass("comment-body").html(html)));
 			if (c.data.replies && c.data.replies.data.children[0].kind !== "more") {
-				comment.append($("<button/>").addClass("btn blck mrgn-cntr-x comments-button js-reply-button").attr("data-comment-id", c.data.id).text("See replies (" + c.data.replies.data.children.length + ")"));
+				comment.append($("<button/>").addClass("btn blck comments-button js-reply-button")
+				// .addClass("btn blck mrgn-cntr-x comments-button js-reply-button")
+				.attr("data-comment-id", c.data.id).text("See replies (" + c.data.replies.data.children.length + ")"));
 				replies[c.data.id] = c.data.replies.data.children;
 			}
 
@@ -1254,7 +1276,7 @@ var Header = (function () {
 
 var LinkSummary = (function () {
 
-	var template = "\n\t\t<section id='link-summary'>\n\t\t\t" + UI.template.closeThreadButton + "\n\t\t\t<a href='{{url}}'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln save-tw'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  rid='{{name}}'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln discard-tw'\n\t\t\t\t   id='discard-tw'\n\t\t\t\t   rid='{{name}}'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
+	var template = "\n\t\t<section id='link-summary'>\n\t\t\t" + UI.template.closeThreadButton + "\n\t\t\t<a href='{{url}}' style='max-width:97%;'\n\t\t\t   target='_blank'\n\t\t\t   class='no-ndrln'>\n\t\t\t\t<span id='summary-title'\n\t\t\t\t\t  class='pad-x txt-bld blck'>{{title}}</span>\n\t\t\t\t<span id='summary-domain'\n\t\t\t\t\t  class='pad-x txt-bld'>{{domain}}</span>\n\t\t\t\t{{#over_18}}\n\t\t\t\t<span class='link-label txt-bld summary-label nsfw'>NSFW</span>\n\t\t\t\t{{/over_18}}\n\t\t\t\t{{#stickied}}\n\t\t\t\t<span class='link-label txt-bld summary-label stickied'>Stickied</span>\n\t\t\t\t{{/stickied}}\n\t\t\t</a>\n\t\t\t<div id='summary-footer'>\n\t\t\t\t<span id='summary-author'\n\t\t\t\t\t  class='pad-x txt-bld'>by {{author}}</span>\n\t\t\t</div>\n\t\t\t<div id='summary-preview'>\n\t\t\t</div>\n\t\t\t<div id='summary-btn'>\n\t\t\t\t<a class='btn mrgn-x no-ndrln save-tw'\n\t\t\t\t\t  id='share-tw'\n\t\t\t\t\t  rid='{{name}}'\n\t\t\t\t\t  href='#'>Save</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln'\n\t\t\t\t   id='share-tw'\n\t\t\t\t   target='_blank'\n\t\t\t\t   href='https://twitter.com/intent/tweet?text=\"{{encodedTitle}}\" —&url={{url}}&via=ReedditApp&related=ReedditApp'>Tweet</a>\n\t\t\t\t<a class='btn mrgn-x no-ndrln discard-tw'\n\t\t\t\t   id='discard-tw'\n\t\t\t\t   rid='{{name}}'\n\t\t\t\t   href='#'>Discard</a>\n\t\t\t</div>\n\t\t\t<div class='ls-extra flx flx-spc-btwn-x txt-bld'>\n\t\t\t\t<span class='w-33'\n\t\t\t\t\t  id='summary-sub'>{{subreddit}}</span>\n\t\t\t\t<span class='w-33 txt-cntr'\n\t\t\t\t\t  id='summary-time'></span>\n\t\t\t\t<a class='w-33 no-ndrln txt-r clr-current'\n\t\t\t\t   id='summary-comment-num'\n\t\t\t\t   title='See comments on reddit.com'\n\t\t\t\t   href='http://reddit.com{{link}}'\n\t\t\t\t   target='_blank'>{{num_comments}} comments</a>\n\t\t\t</div>\n\t\t</section>";
 
 	var setPostSummary = function setPostSummary(data, postID) {
 		if (!data.link) {
@@ -1305,25 +1327,26 @@ var LinkSummary = (function () {
 			} else if (isGallery) {
 				summaryHTML += '<div class="wrapper_gallery">';
 				for (var i = 0; i < gallery_data.items.length; i++) {
-					summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"#preview\" target=\"_blank\" class=\"preview-container blck js-img-preview\" data-img=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery image-preview\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
+					summaryHTML += "\n\t\t\t\t\t\t<div class=\"card_gallery\">\n\t\t\t\t\t\t\t<a href=\"#preview\" target=\"_blank\" class=\"preview-container blck js-gallery-preview\" data-img=\"" + media_metadata[gallery_data.items[i].media_id].s.u + "\">\n\t\t\t\t\t\t\t<img src=\"" + media_metadata[gallery_data.items[i].media_id].p[0].u + "\" class=\"cover_gallery image-preview\" alt=\"\">\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>";
 				}
 				summaryHTML += '</div>';
 			} else if (imageLink) {
 				// If it's an image link
-				summaryHTML += '<a href="' + imageLink + '" target="_blank" class="preview-container blck js-img">' + '<img class="image-previews" src="' + imageLink + '" />' + '</a>';
-				// '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
-				// '<img class="image-preview" src="' + imageLink + '" />' +
+				summaryHTML +=
+				// '<a href="'+imageLink+'" target="_blank" class="preview-container blck js-img">' +
+				// '<img class="image-previews" src="' + imageLink + '" />' +
 				// '</a>';
+				'<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' + '<img class="image-preview" src="' + imageLink + '" height=500 />' + '</a>';
 			} else {
-					// if it's a Gfycat or RedGifs link
-					var gfycatID = getGfycatIDfromURL(linkURL);
-					var redGifsID = getRedGifsIDfromURL(linkURL);
-					if (gfycatID) {
-						summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://gfycat.com/ifr/" + gfycatID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
-					} else if (redGifsID) {
-						summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://redgifs.com/ifr/" + redGifsID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
-					}
+				// if it's a Gfycat or RedGifs link
+				var gfycatID = getGfycatIDfromURL(linkURL);
+				var redGifsID = getRedGifsIDfromURL(linkURL);
+				if (gfycatID) {
+					summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://gfycat.com/ifr/" + gfycatID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
+				} else if (redGifsID) {
+					summaryHTML += "<div style='position:relative; padding-bottom:56.69%'>" + "<iframe src='https://redgifs.com/ifr/" + redGifsID + "' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe>" + "</div>";
 				}
+			}
 		}
 		// }
 		summaryHTML += "<section id='comments-container'></section>";
@@ -1421,6 +1444,17 @@ var LinkSummary = (function () {
 			ev.preventDefault();
 			Modal.showImageViewer(this.dataset.img);
 		});
+		UI.el.detailWrap.on('click', '.js-gallery-preview', function (ev) {
+			ev.preventDefault();
+			var gallerys = $(this).parent().parent().children();
+			var img_urls = [];
+			for (var y = 0; y < gallerys.length; y++) {
+				var gallery = gallerys[y];
+				img_urls.push($(gallery).find('a').attr('data-img'));
+			}
+			console.log(img_urls);
+			Modal.showGalleryViewer(img_urls);
+		});
 		UI.el.detailWrap.on('click', '.discard-tw', function (ev) {
 			ev.preventDefault();
 			var id = $(this).attr('rid');
@@ -1444,10 +1478,13 @@ var LinkSummary = (function () {
 			// $("#"+id).css('display', 'none');
 			var archives = localStorage.getItem('archives');
 			var archives_comments = localStorage.getItem('archives_comments');
+			var currentSelection = localStorage.getItem('currentSelection');
+			currentSelection = JSON.parse(currentSelection);
 			if (!archives) {
 				localStorage.setItem('archives', JSON.stringify([document.getElementById(id).outerHTML]));
 				localStorage.setItem('archives_comments', JSON.stringify([{
 					id: id,
+					subreddit: currentSelection.name,
 					comments: $("#summary-comment-num").text()
 				}]));
 			} else {
@@ -1457,6 +1494,7 @@ var LinkSummary = (function () {
 					archives.push(document.getElementById(id).outerHTML);
 					archives_comments.push({
 						id: id,
+						subreddit: currentSelection.name,
 						comments: $("#summary-comment-num").text()
 					});
 				}
@@ -1583,6 +1621,7 @@ var Menu = (function () {
 
 		el.mainMenu.on('click', '.sub', function (ev) {
 			ev.preventDefault();
+			$(".sub--selected").removeClass('sub--selected');
 			var target = ev.target;
 			Menu.move(UI.Move.LEFT);
 			Subreddits.loadPosts(target.dataset.name);
@@ -1704,6 +1743,19 @@ var Modal = (function () {
 		};
 		Modal.show(imageViewer, false, config);
 	};
+	var showGalleryViewer = function showGalleryViewer(imageURL) {
+		console.log(imageURL);
+		var imageViewer = '<div style="align-items: center;\n\t\t\t\tdisplay: flex;\n\t\t\t\tjustify-content: center;\n\t\t\t\tmargin: 0;"><div class="carousel">\n\t\t\t\t<div class="buttons-container">\n\t\t\t\t<button id="left" class="gallery_btn">Prev</button>\n\t\t\t\t<button id="right" class="gallery_btn">Next</button>\n\t\t\t\t</div>\n\t\t\t<div class="image-container" id="imgs" style="">';
+		for (var i = 0; i < imageURL.length; i++) {
+			imageViewer += '<img\n\t\t\t\tsrc="' + imageURL[i] + '"\n\t\t\t\talt="second-image"\n\t\t\t\tstyle="object-fit: cover; width:300px;"\n\t\t\t/>';
+		}
+		imageViewer += '</div>\n\t\t\t</div></div>';
+		var config = {
+			modalClass: 'modal--closable',
+			noBounce: true
+		};
+		Modal.show(imageViewer, false, config);
+	};
 
 	var handleKeyPress = function handleKeyPress(ev) {
 		if (ev.which === 27) {
@@ -1718,16 +1770,42 @@ var Modal = (function () {
 			UI.el.body.off('keydown', handleKeyPress);
 		}
 	};
+	var idx = 0;
 
-	var initListeners = function initListeners() {
-		UI.el.body.on('click', '.modal--closable', Modal.remove);
+	var IMG_CONTAINER_WIDTH = 300;
+	var handleButtonClick = function handleButtonClick() {
+		idx += -1;
+		changeImage();
 	};
+	var handleRightButtonClick = function handleRightButtonClick() {
+		idx += 1;
+		changeImage();
+	};
+	var initListeners = function initListeners() {
+		UI.el.body.on('click', '.modal--closable', function (ev) {
+			console.log(ev.target.className);
+			if (ev.target.className != 'gallery_btn') {
+				Modal.remove();
+			}
+		});
+		UI.el.body.on('click', '#left', handleButtonClick);
+		UI.el.body.on('click', '#right', handleRightButtonClick);
+	};
+	function changeImage() {
+		var imgs = $('#imgs');
+		var img = $("#imgs").find('img');
+		console.log(idx, 'check', img);
+		if (idx > img.length - 1) idx = 0;else if (idx < 0) idx = img.length - 1;
+
+		imgs.css('transform', 'translateX(' + -idx * IMG_CONTAINER_WIDTH + 'px)');
+	}
 
 	// Exports
 	return {
 		show: show,
 		remove: remove,
 		showImageViewer: showImageViewer,
+		showGalleryViewer: showGalleryViewer,
 		initListeners: initListeners,
 		isShowing: isShowing
 	};
@@ -1752,7 +1830,7 @@ var Modal = (function () {
 
 var Posts = (function () {
 
-	var template = '\n\t\t{{#children}}\n\t\t\t<article class=\'link-wrap flx w-100\' id=\'{{data.name}}\'>\n\t\t\t\t<div class=\'link flx no-ndrln pad-y pad-x js-link\' data-id=\'{{data.id}}\'>\n\t\t\t\t\t<div class=\'link-thumb\'>\n\t\t\t\t\t\t<div style=\'background-image: url({{data.thumbnail}})\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'link-info\'>\n\t\t\t\t\t\t<a href=\'{{data.url}}\'\n\t\t\t\t\t\t   data-id=\'{{data.id}}\'\n\t\t\t\t\t\t   target=\'_blank\'\n\t\t\t\t\t\t   class=\'link-title no-ndrln blck js-post-title\'>\n\t\t\t\t\t\t{{data.title}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<div class=\'link-domain\'>{{data.domain}}</div>\n\t\t\t\t\t\t<span class=\'link-sub\'>{{data.subreddit}}</span>\n\t\t\t\t\t\t{{#data.over_18}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld nsfw\'>NSFW</span>\n\t\t\t\t\t\t{{/data.over_18}}\n\t\t\t\t\t\t{{#data.stickied}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld stickied\'>Stickied</span>\n\t\t\t\t\t\t{{/data.stickied}}\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\tsubmitted \n\t\t\t\t\t\t\t<time title="{{data.unix_time}}" class="live-timestamp">\n\t\t\t\t\t\t\t\t{{data.time_ago}}\n\t\t\t\t\t\t\t</time> by \n\t\t\t\t\t\t\t<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">\n\t\t\t\t\t\t\t{{data.author}}\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t<span class="userattrs"></span>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\t<a href="{{data.url}}" data-event-action="comments" class="bylink comments may-blank" rel="nofollow">{{data.comments}}</a>\n\t\t\t\t\t\t\t<a href="#">save</a>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<a href=\'#comments:{{data.id}}\' class=\'to-comments w-15 flx flx-cntr-y btn-basic\'>\n\t\t\t\t\t<div class=\'comments-icon\'></div>\n\t\t\t\t</a>\n\t\t\t</article>\n\t\t{{/children}}\n\t\t<button id=\'btn-load-more-posts\'\n\t\t\t\tclass=\'btn blck mrgn-cntr-x\'>More</button>\n\t\t<div id=\'main-overflow\'></div>';
+	var template = '\n\t\t{{#children}}\n\t\t\t<article class=\'link-wrap flx w-100\' id=\'{{data.name}}\'>\n\t\t\t\t<div class=\'link flx no-ndrln pad-y pad-x js-link\' data-id=\'{{data.id}}\'>\n\t\t\t\t\t<div class=\'link-thumb\'>\n\t\t\t\t\t\t<div style=\'background-image: url({{data.thumbnail}})\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'link-info\'>\n\t\t\t\t\t\t<p\n\t\t\t\t\t\t   data-id=\'{{data.id}}\'\n\t\t\t\t\t\t   class=\'link-title no-ndrln blck js-post-title\'>\n\t\t\t\t\t\t{{data.title}}\n\t\t\t\t\t\t</p>\n\t\t\t\t\t\t<div class=\'link-domain\'>{{data.domain}}</div>\n\t\t\t\t\t\t<span class=\'link-sub\'>{{data.subreddit}}</span>\n\t\t\t\t\t\t{{#data.over_18}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld nsfw\'>NSFW</span>\n\t\t\t\t\t\t{{/data.over_18}}\n\t\t\t\t\t\t{{#data.stickied}}\n\t\t\t\t\t\t<span class=\'link-label txt-bld stickied\'>Stickied</span>\n\t\t\t\t\t\t{{/data.stickied}}\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\tsubmitted \n\t\t\t\t\t\t\t<time title="{{data.unix_time}}" class="live-timestamp">\n\t\t\t\t\t\t\t\t{{data.time_ago}} ({{data.timestamp}})\n\t\t\t\t\t\t\t</time> by \n\t\t\t\t\t\t\t<a href="https://old.reddit.com/user/slvrfn" class="author may-blank id-t2_o61cy">\n\t\t\t\t\t\t\t{{data.author}}\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t<span class="userattrs"></span>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t\t<p class="tagline ">\n\t\t\t\t\t\t\t<a href="{{data.url}}" data-event-action="comments" class="bylink comments may-blank" rel="nofollow">{{data.comments}}</a>\n\t\t\t\t\t\t\t<a href="#">save</a>\n\t\t\t\t\t\t</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<a href=\'#comments:{{data.id}}\' class=\'to-comments w-15 flx flx-cntr-y btn-basic\'>\n\t\t\t\t\t<div class=\'comments-icon\'></div>\n\t\t\t\t</a>\n\t\t\t</article>\n\t\t{{/children}}\n\t\t<button id=\'btn-load-more-posts\'\n\t\t\t\tclass=\'btn blck mrgn-cntr-x\'>More</button>\n\t\t<div id=\'main-overflow\'></div>';
 
 	var loading = false,
 	    list = {},
@@ -1817,12 +1895,28 @@ var Posts = (function () {
 			url: baseUrl + Sorting.get() + URLs.limitEnd + paging,
 			success: function success(result) {
 				if (regex) {
-					var regexData = new RegExp(regex, 'i');
-					var filteredPosts = result;
-					filteredPosts.data.children = result.data.children.filter(function (post) {
-						return regexData.test(post.data.title);
-					});
-					show(filteredPosts, paging);
+					if (regex.length > 1) {
+						var filteredPosts = result;
+						var postresAry = [];
+						for (var w = 0; w < regex.length; w++) {
+							var regexData = new RegExp(regex[w], 'i');
+							var postres = result.data.children.filter(function (post) {
+								return regexData.test(post.data.title);
+							});
+							for (var e = 0; e < postres.length; e++) {
+								postresAry.push(postres[e]);
+							}
+						}
+						filteredPosts.data.children = postresAry;
+						show(filteredPosts, paging);
+					} else {
+						var regexData = new RegExp(regex, 'i');
+						var filteredPosts = result;
+						filteredPosts.data.children = result.data.children.filter(function (post) {
+							return regexData.test(post.data.title);
+						});
+						show(filteredPosts, paging);
+					}
 				} else {
 					show(result, paging);
 				}
@@ -1844,12 +1938,26 @@ var Posts = (function () {
 		// links: API raw data
 		var modifiedLinks = links;
 		var childrens = [];
+		var comments = Store.getItem("comments");
+		if (comments) {
+			comments = JSON.parse(comments);
+		}
 		for (var i = 0; i < links.children.length; i++) {
 			var linkChild = links.children[i];
+			var firstLoadedComment = "";
+			if (comments) {
+				firstLoadedComment = comments.filter(function (obj) {
+					return obj.id === links.children[i].data.name;
+				});
+				if (firstLoadedComment.length > 0) {
+					firstLoadedComment = " (" + firstLoadedComment[0].count.split(" ")[0] + ")";
+				}
+			}
 			Object.assign(linkChild.data, {
 				time_ago: timeAgo(links.children[i].data.created_utc),
 				unix_time: unixTime(links.children[i].data.created_utc),
-				comments: links.children[i].data.num_comments == 1 ? "comment" : links.children[i].data.num_comments + " comments"
+				timestamp: timestamp(links.children[i].data.created_utc),
+				comments: links.children[i].data.num_comments == 1 ? "comment" + firstLoadedComment : links.children[i].data.num_comments + " comments" + firstLoadedComment
 			});
 			childrens.push(linkChild);
 		}
@@ -1921,9 +2029,8 @@ var Posts = (function () {
 			}
 		}
 
-		if (linksCount < 30) {
-			// Remove 'More links' button if there are less than 30 links
-			el.moreButton().remove();
+		if (linksCount < 30) {// Remove 'More links' button if there are less than 30 links
+			// el.moreButton().remove();
 		}
 
 		if (!is.desktop) {
@@ -2089,6 +2196,17 @@ var Posts = (function () {
 		var formattedDate = dayNames[date.getUTCDay()] + ' ' + monthNames[date.getUTCMonth()] + ' ' + String(date.getUTCDate()).padStart(2, '0') + ' ' + String(date.getUTCHours()).padStart(2, '0') + ':' + String(date.getUTCMinutes()).padStart(2, '0') + ':' + String(date.getUTCSeconds()).padStart(2, '0') + ' ' + date.getUTCFullYear() + ' UTC';
 		return formattedDate;
 	};
+	var timestamp = function timestamp(unix_timestamp) {
+		var date = new Date(unix_timestamp * 1000);
+		var year = date.getUTCFullYear();
+		var month = date.getUTCMonth() + 1; // JavaScript starts counting months from 0.
+		var day = date.getUTCDate();
+		var hours = date.getUTCHours();
+		var minutes = date.getUTCMinutes();
+		var seconds = date.getUTCSeconds();
+		var formattedTime = hours + ':' + minutes + ':' + seconds + ' ' + year + '-' + month + '-' + day;
+		return formattedTime;
+	};
 	// Exports
 	return {
 		initListeners: initListeners,
@@ -2103,6 +2221,7 @@ var Posts = (function () {
 		setList: setList,
 		timeAgo: timeAgo,
 		unixTime: unixTime,
+		timestamp: timestamp,
 		getLoaded: getLoaded
 	};
 })();
@@ -2285,6 +2404,20 @@ var Subreddits = (function () {
 		} else {
 			el.list.append($("<a/>").attr({ 'data-name': subs, 'href': '#' }).addClass(subredditClasses).text(subs));
 		}
+		var comments = localStorage.getItem('archives_comments');
+		var archiveListSubreddit = [];
+		var aSubredditDom = "";
+		if (comments) {
+			comments = JSON.parse(comments);
+			for (var ca = 0; ca < comments.length; ca++) {
+				var cSubreddit = comments[ca].subreddit.charAt(0).toUpperCase() + comments[ca].subreddit.slice(1);
+				if (archiveListSubreddit.indexOf(cSubreddit) == -1) {
+					archiveListSubreddit.push(cSubreddit);
+					aSubredditDom += "<a href='#' class='cSub pad-x pad-y blck no-ndrln txt-cap txt-ellps' rid='" + comments[ca].subreddit + "'>" + cSubreddit + "</a>";
+				}
+			}
+		}
+		$("#archive_subs").html(aSubredditDom);
 	};
 
 	var detach = function detach(sub) {
@@ -2357,7 +2490,15 @@ var Subreddits = (function () {
 				url = URLs.init + "r/" + sub + "/";
 			}
 			if (results.length > 0) {
-				Posts.load(url, "", results[0].regex);
+				if (sub.toLowerCase() === 'frontpage') {
+					var regexAry = [];
+					for (var r = 0; r < list.length; r++) {
+						regexAry.push(list[r].regex);
+					}
+					Posts.load(url, "", regexAry);
+				} else {
+					Posts.load(url, "", [results[0].regex]);
+				}
 			} else {
 				Posts.load(url, "", "");
 			}
@@ -2582,20 +2723,33 @@ var Subreddits = (function () {
 
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
 		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
-		UI.el.body.on('click', ".archive_btn", function () {
-			console.log(1);
-			var archives = localStorage.getItem('archives');
-			var archiveDom = "";
-			if (archives) {
-				archives = JSON.parse(archives);
-				$(".sub--selected").removeClass('sub--selected');
-				for (var o = 0; o < archives.length; o++) {
-					var str = archives[o];
-					str = str.replace("link-selected", "");
-					archiveDom += str;
+		UI.el.body.on('click', ".cSub", function () {
+			var id = $(this).attr("rid");
+			$(".sub--selected").removeClass('sub--selected');
+			$(this).addClass('sub--selected');
+			var archives_comments = localStorage.getItem('archives_comments');
+			if (archives_comments) {
+				archives_comments = JSON.parse(archives_comments);
+				var archives_comments_match = archives_comments.filter(function (item) {
+					return item.subreddit.toLowerCase() === id.toLowerCase();
+				});
+				console.log(archives_comments_match);
+				var archives = localStorage.getItem('archives');
+				var archiveDom = "";
+				if (archives) {
+					archives = JSON.parse(archives);
+					for (var p = 0; p < archives_comments_match.length; p++) {
+						for (var o = 0; o < archives.length; o++) {
+							var str = archives[o];
+							if (str.indexOf(archives_comments_match[p].id) > -1) {
+								str = str.replace("link-selected", "");
+								archiveDom += str;
+							}
+						}
+					}
 				}
+				$("#main-wrap").html(archiveDom);
 			}
-			$("#main-wrap").html(archiveDom);
 		});
 		//
 

@@ -93,6 +93,20 @@ var Subreddits = (function () {
 				.addClass(subredditClasses)
 				.text(subs));
 		}
+		var comments = localStorage.getItem('archives_comments');
+		var archiveListSubreddit = [];
+		var aSubredditDom = "";
+		if (comments) {
+			comments = JSON.parse(comments);
+			for (var ca = 0; ca < comments.length; ca++) {
+				var cSubreddit = comments[ca].subreddit.charAt(0).toUpperCase() + comments[ca].subreddit.slice(1);
+				if (archiveListSubreddit.indexOf(cSubreddit) == -1) {
+					archiveListSubreddit.push(cSubreddit);
+					aSubredditDom += "<a href='#' class='cSub pad-x pad-y blck no-ndrln txt-cap txt-ellps' rid='" + comments[ca].subreddit + "'>" + cSubreddit + "</a>";
+				}
+			}
+		}
+		$("#archive_subs").html(aSubredditDom);
 	};
 
 	var detach = function (sub) {
@@ -162,7 +176,15 @@ var Subreddits = (function () {
 				url = URLs.init + "r/" + sub + "/";
 			}
 			if (results.length > 0) {
-				Posts.load(url, "", results[0].regex);
+				if (sub.toLowerCase() === 'frontpage') {
+					var regexAry = [];
+					for (var r=0;r<list.length;r++) {
+						regexAry.push(list[r].regex);
+					}
+					Posts.load(url, "", regexAry);
+				} else {
+					Posts.load(url, "", [results[0].regex]);
+				}
 			} else {
 				Posts.load(url, "", "");
 			}
@@ -383,20 +405,31 @@ var Subreddits = (function () {
 
 		UI.el.body.on('click', "#btn-add-new-sub", addFromNewForm);
 		UI.el.body.on('click', "#btn-update-new-sub", updateFromNewForm);
-		UI.el.body.on('click', ".archive_btn", function () {
-			console.log(1);
-			var archives = localStorage.getItem('archives');
-			var archiveDom = "";
-			if (archives) {
-				archives = JSON.parse(archives);
-				$(".sub--selected").removeClass('sub--selected');
-				for (var o = 0; o < archives.length; o++) {
-					var str = archives[o];
-					str = str.replace("link-selected", "");
-					archiveDom += str;
+		UI.el.body.on('click', ".cSub", function () {
+			var id = $(this).attr("rid");
+			$(".sub--selected").removeClass('sub--selected');
+			$(this).addClass('sub--selected');
+			var archives_comments = localStorage.getItem('archives_comments');
+			if (archives_comments) {
+				archives_comments = JSON.parse(archives_comments);
+				var archives_comments_match = archives_comments.filter(item => item.subreddit.toLowerCase() === id.toLowerCase());
+				console.log(archives_comments_match);
+				var archives = localStorage.getItem('archives');
+				var archiveDom = "";
+				if (archives) {
+					archives = JSON.parse(archives);
+					for (var p = 0; p < archives_comments_match.length; p++) {
+						for (var o = 0; o < archives.length; o++) {
+							var str = archives[o];
+							if (str.indexOf(archives_comments_match[p].id) > -1) {
+								str = str.replace("link-selected", "");
+								archiveDom += str;
+							}
+						}
+					}
 				}
+				$("#main-wrap").html(archiveDom);
 			}
-			$("#main-wrap").html(archiveDom);
 		});
 		// 
 

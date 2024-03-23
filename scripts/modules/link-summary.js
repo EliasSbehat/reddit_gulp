@@ -14,7 +14,7 @@ var LinkSummary = (function() {
 	const template = `
 		<section id='link-summary'>
 			${UI.template.closeThreadButton}
-			<a href='{{url}}'
+			<a href='{{url}}' style='max-width:97%;'
 			   target='_blank'
 			   class='no-ndrln'>
 				<span id='summary-title'
@@ -118,7 +118,7 @@ var LinkSummary = (function() {
 					for (var i=0;i<gallery_data.items.length;i++) {
 						summaryHTML += `
 						<div class="card_gallery">
-							<a href="#preview" target="_blank" class="preview-container blck js-img-preview" data-img="${media_metadata[gallery_data.items[i].media_id].s.u}">
+							<a href="#preview" target="_blank" class="preview-container blck js-gallery-preview" data-img="${media_metadata[gallery_data.items[i].media_id].s.u}">
 							<img src="${media_metadata[gallery_data.items[i].media_id].p[0].u}" class="cover_gallery image-preview" alt="">
 							</a>
 						</div>`;
@@ -126,12 +126,12 @@ var LinkSummary = (function() {
 					summaryHTML += '</div>';
 				} else if (imageLink) { // If it's an image link
 					summaryHTML +=
-						'<a href="'+imageLink+'" target="_blank" class="preview-container blck js-img">' +
-						'<img class="image-previews" src="' + imageLink + '" />' +
-						'</a>';
-						// '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
-						// '<img class="image-preview" src="' + imageLink + '" />' +
+						// '<a href="'+imageLink+'" target="_blank" class="preview-container blck js-img">' +
+						// '<img class="image-previews" src="' + imageLink + '" />' +
 						// '</a>';
+						'<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
+						'<img class="image-preview" src="' + imageLink + '" height=500 />' +
+						'</a>';
 				} else { // if it's a Gfycat or RedGifs link
 					var gfycatID = getGfycatIDfromURL(linkURL);
 					var redGifsID = getRedGifsIDfromURL(linkURL);
@@ -241,6 +241,17 @@ var LinkSummary = (function() {
 			ev.preventDefault();
 			Modal.showImageViewer(this.dataset.img);
 		});
+		UI.el.detailWrap.on('click', '.js-gallery-preview', function(ev) {
+			ev.preventDefault();
+			var gallerys = $(this).parent().parent().children();
+			var img_urls = [];
+			for (var y=0;y<gallerys.length;y++) {
+				var gallery = gallerys[y];
+				img_urls.push($(gallery).find('a').attr('data-img'));
+			}
+			console.log(img_urls);
+			Modal.showGalleryViewer(img_urls);
+		});
 		UI.el.detailWrap.on('click', '.discard-tw', function(ev) {
 			ev.preventDefault();
 			var id = $(this).attr('rid');
@@ -264,10 +275,13 @@ var LinkSummary = (function() {
 			// $("#"+id).css('display', 'none');
 			var archives = localStorage.getItem('archives');
 			var archives_comments = localStorage.getItem('archives_comments');
+			var currentSelection = localStorage.getItem('currentSelection');
+			currentSelection = JSON.parse(currentSelection);
 			if (!archives) {
 				localStorage.setItem('archives', JSON.stringify([document.getElementById(id).outerHTML]));
 				localStorage.setItem('archives_comments', JSON.stringify([{
 					id: id,
+					subreddit: currentSelection.name,
 					comments: $("#summary-comment-num").text()
 				}]));
 			} else {
@@ -277,6 +291,7 @@ var LinkSummary = (function() {
 					archives.push(document.getElementById(id).outerHTML);
 					archives_comments.push({
 						id: id,
+						subreddit: currentSelection.name,
 						comments: $("#summary-comment-num").text()
 					});
 				}

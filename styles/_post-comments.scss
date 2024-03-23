@@ -10,11 +10,11 @@
 		margin: 0 auto;
 	}
 
-	& > .comments-level > .comment-wrap {
+	&>.comments-level>.comment-wrap {
 		border-left: 0;
 		padding-right: 10px;
 
-		> div:first-child {
+		>div:first-child {
 			padding: 10px 10px 0 10px;
 			margin: -10px -10px 0;
 			border-top: 1px solid #eee;
@@ -106,7 +106,8 @@
 
 .comment-author,
 .comment-poster {
-	color: $red-comments;
+	// color: $red-comments;
+	color: '#369';
 	font-weight: 500;
 
 	@include on-theme(dark) {
@@ -182,7 +183,8 @@
 		background-color: $dark-bg-color-1;
 	}
 
-	> a { // Title/Main Link
+	>a {
+		// Title/Main Link
 		@include activeState($active-bg);
 	}
 }
@@ -229,10 +231,12 @@
 }
 
 $gray-dark: #333;
+
 #summary-btn {
 	padding-bottom: 10px;
 	padding-top: 10px;
 }
+
 #summary-footer {
 	display: flex;
 	justify-content: space-between;
@@ -348,4 +352,35 @@ $gray-dark: #333;
 	@include break-point-min($bp-large) {
 		padding: $gutter;
 	}
+}
+
+
+.carousel {
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+	width: 300px;
+}
+
+.image-container {
+	display: flex;
+	transform: translateX(0);
+	transition: transform 0.5s ease-in-out;
+}
+
+.buttons-container {
+	display: flex;
+	justify-content: space-between;
+}
+
+.gallery_btn {
+	background-color: #3d4b4b;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 0.8rem;
+	width: 49.5%;
+}
+
+.gallery_btn:hover {
+	opacity: 0.9;
 }

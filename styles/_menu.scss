@@ -3,7 +3,7 @@
 @import "globals/helpers";
 @import "base";
 
-#subs,
+#subs, #archive_subs,
 #channels {
   padding: 0;
   margin: 0;
@@ -65,7 +65,7 @@
     font-size: 20px;
 }
 
-.sub {
+.sub, .cSub {
     color: white;
     font-size: 14px;
     -webkit-touch-callout: none;

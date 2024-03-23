@@ -98,6 +98,7 @@ var Menu = (function() {
 
 		el.mainMenu.on('click', '.sub', (ev) => {
 			ev.preventDefault();
+			$(".sub--selected").removeClass('sub--selected');
 			const target = ev.target;
 			Menu.move(UI.Move.LEFT);
 			Subreddits.loadPosts(target.dataset.name);

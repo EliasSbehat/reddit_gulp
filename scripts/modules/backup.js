@@ -83,6 +83,9 @@ var Backup = (function () {
 		if (data.archives) {
 			Store.setItem("archives", JSON.stringify(data.archives));
 		}
+		if (data.comments) {
+			Store.setItem("comments", JSON.stringify(data.comments));
+		}
 		refresh = true;
 		// if (data.channels) {
 		// 	refresh = true;
@@ -137,23 +140,40 @@ var Backup = (function () {
 					var contents = db.exec("SELECT * FROM subreddits");
 					var discards = db.exec("SELECT * FROM discards");
 					var archives = db.exec("SELECT * FROM archives");
-					console.log(contents, discards, archives);
+					var comments = db.exec("SELECT * FROM comments");
+					console.log(contents, discards, archives, comments);
 					var defaults = [];
-					for (var j = 0; j < contents[0].values.length; j++) {
-						defaults.push({
-							"subreddit": contents[0].values[j][0],
-							"regex": contents[0].values[j][1]
-						});
+					if (contents.length > 0) {
+						for (var j = 0; j < contents[0].values.length; j++) {
+							defaults.push({
+								"subreddit": contents[0].values[j][0],
+								"regex": contents[0].values[j][1]
+							});
+						}
+					}
+					var commentsData = [];
+					if (comments.length > 0) {
+						for (var u = 0; u < comments[0].values.length; u++) {
+							commentsData.push({
+								"id": comments[0].values[u][0],
+								"count": comments[0].values[u][1],
+								"subreddit": comments[0].values[u][2]
+							});
+						}
 					}
 					var discardsData = [];
-					for (var k = 0; k < discards[0].values.length; k++) {
-						discardsData.push(discards[0].values[k][0]);
+					if (discards.length > 0) {
+						for (var k = 0; k < discards[0].values.length; k++) {
+							discardsData.push(discards[0].values[k][0]);
+						}
 					}
 					var archivesData = [];
-					for (var q = 0; q < archives[0].values.length; q++) {
-						archivesData.push(archives[0].values[q][0]);
+					if (archives.length > 0) {
+						for (var q = 0; q < archives[0].values.length; q++) {
+							archivesData.push(archives[0].values[q][0]);
+						}
 					}
-					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData });
+					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData, comments: commentsData });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -183,7 +203,7 @@ var Backup = (function () {
 						db.run("CREATE TABLE subreddits(subreddit text, regex text);");
 						db.run("CREATE TABLE discards(id text);");
 						db.run("CREATE TABLE archives(id text);");
-						db.run("CREATE TABLE comments(id text, count text);");
+						db.run("CREATE TABLE comments(id text, count text, subreddit text);");
 						for (var i = 0; i < subs.length; i++) {
 							const result = db.exec("SELECT * FROM subreddits WHERE subreddit='" + subs[i].subreddit + "';");
 							if (result.length == 0) {
@@ -205,7 +225,7 @@ var Backup = (function () {
 						if (archives_comments) {
 							archives_comments = JSON.parse(archives_comments);
 							for (var r = 0; r < archives_comments.length; r++) {
-								db.run("INSERT INTO comments VALUES ('" + archives_comments[r].id + "', '"+archives_comments[r].comments+"');");
+								db.run("INSERT INTO comments VALUES ('" + archives_comments[r].id + "', '" + archives_comments[r].comments + "', '" + archives_comments[r].subreddit + "');");
 							}
 						}
 						resolve(db);

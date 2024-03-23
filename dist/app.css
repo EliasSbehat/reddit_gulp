@@ -269,7 +269,7 @@ button {
 
 .comments-button {
   font-size: 11px;
-  width: 90px;
+  width: 120px;
 }
 
 #btn-load-more-posts {
@@ -292,6 +292,7 @@ button {
 }
 
 #subs,
+#archive_subs,
 #channels {
   padding: 0;
   margin: 0;
@@ -352,37 +353,44 @@ button {
   font-size: 20px;
 }
 
-.sub {
+.sub,
+.cSub {
   color: white;
   font-size: 14px;
   -webkit-touch-callout: none;
 }
 
-.sub:hover {
+.sub:hover,
+.cSub:hover {
   text-shadow: 0 0 10px #CCC;
 }
 
-.light .sub {
+.light .sub,
+.light .cSub {
   color: #444;
 }
 
-.dark .sub {
+.dark .sub,
+.dark .cSub {
   color: #95a1bc;
 }
 
-.sub--selected {
+.sub--selected,
+.cSub--selected {
   text-shadow: 0 0 10px #ccc;
   border-left: 3px solid #4286f5;
 }
 
-.light .sub--selected {
+.light .sub--selected,
+.light .cSub--selected {
   border: 0;
   text-shadow: none;
   background-color: #4889ea;
   color: #ffffff;
 }
 
-.dark .sub--selected {
+.dark .sub--selected,
+.dark .cSub--selected {
   border-color: #0084ff;
 }
 
@@ -949,7 +957,7 @@ header {
 
 .comment-author,
 .comment-poster {
-  color: #c6544f;
+  color: "#369";
   font-weight: 500;
 }
 
@@ -1183,6 +1191,39 @@ header {
   max-width: 100%;
   max-height: 100%;
   padding: 10px 0;
+}
+
+.carousel {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  width: 300px;
+}
+
+.image-container {
+  display: -ms-flexbox;
+  display: flex;
+  transform: translateX(0);
+  transition: transform 0.5s ease-in-out;
+}
+
+.buttons-container {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.gallery_btn {
+  background-color: #3d4b4b;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.8rem;
+  width: 49.5%;
+}
+
+.gallery_btn:hover {
+  opacity: 0.9;
 }
 
 .options-menu {
