@@ -2118,7 +2118,7 @@ var Posts = (function () {
 					}
 					reg = regexAry;
 				} else {
-					reg = results[0].regex;
+					reg = [results[0].regex];
 				}
 			}
 		}
