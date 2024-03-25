@@ -1322,8 +1322,11 @@ var LinkSummary = (function () {
 			if (youTubeID) {
 				summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
 			} else if (domain == 'v.redd.it') {
-				// console.log(Posts.getList()[postID].secure_media.reddit_video.fallback_url.split("DASH_")[0]+"DASH_AUDIO_128.mp4");
-				summaryHTML += "<div style=\"text-align:center;\">\n\t\t\t\t\t\t\t<video id=\"videoPlayer\" style=\"width:80%;\" controls></video>\n\n\t\t\t\t\t\t</div>";
+				if (Posts.getList()[postID].secure_media) {
+					summaryHTML += "<div style=\"text-align:center;\">\n\t\t\t\t\t\t\t\t<video id=\"videoPlayer\" style=\"width:80%;\" controls></video>\n\t\t\t\t\t\t\t</div>";
+				} else {
+					summaryHTML += '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' + '<img class="image-preview" src="' + imageLink + '" height=500 />' + '</a>';
+				}
 			} else if (isGallery) {
 				summaryHTML += '<div class="wrapper_gallery">';
 				for (var i = 0; i < gallery_data.items.length; i++) {

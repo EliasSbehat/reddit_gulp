@@ -110,12 +110,16 @@ var LinkSummary = (function () {
 						 </a>
 						 <div class="video-preview-box"></div>`;
 			} else if (domain == 'v.redd.it') {
-				// console.log(Posts.getList()[postID].secure_media.reddit_video.fallback_url.split("DASH_")[0]+"DASH_AUDIO_128.mp4");
-				summaryHTML +=
-					`<div style="text-align:center;">
-							<video id="videoPlayer" style="width:80%;" controls></video>
-
-						</div>`;
+				if (Posts.getList()[postID].secure_media) {
+					summaryHTML +=
+						`<div style="text-align:center;">
+								<video id="videoPlayer" style="width:80%;" controls></video>
+							</div>`;
+				} else {
+					summaryHTML += '<a href="#preview" class="preview-container blck js-img-preview" data-img="' + imageLink + '">' +
+					'<img class="image-preview" src="' + imageLink + '" height=500 />' +
+					'</a>';
+				}
 			} else if (isGallery) {
 				summaryHTML += '<div class="wrapper_gallery">';
 				for (var i = 0; i < gallery_data.items.length; i++) {
