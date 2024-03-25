@@ -296,7 +296,6 @@ var Posts = (function () {
 	var setList = function (posts) {
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
-			console.log(post);
 			if (list[post.data.id]) { // if already cached
 				list[post.data.id].num_comments = post.data.num_comments;
 				list[post.data.id].created_utc = post.data.created_utc;

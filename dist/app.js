@@ -1322,7 +1322,8 @@ var LinkSummary = (function () {
 			if (youTubeID) {
 				summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
 			} else if (domain == 'v.redd.it') {
-				summaryHTML += "<div style=\"text-align:center;\">\n\t\t\t\t\t\t\t<video id='my-video' class='video-js' data-setup='{}' style=\"width=100%\" controls>\n\t\t\t\t\t\t\t\t<source src='" + Posts.getList()[postID].secure_media.reddit_video.dash_url + "' type='video/mp4'>\n\t\t\t\t\t\t\t\t<source src='" + Posts.getList()[postID].secure_media.reddit_video.fallback_url + "' type='audio/mp4'>\n\t\t\t\t\t\t\t\t<p class='vjs-no-js'>\n\t\t\t\t\t\t\t\t\tTo view this video please enable JavaScript, and consider upgrading to a web browser that\n\t\t\t\t\t\t\t\t\t<a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</video>\n\t\t\t\t\t\t</div>";
+				// console.log(Posts.getList()[postID].secure_media.reddit_video.fallback_url.split("DASH_")[0]+"DASH_AUDIO_128.mp4");
+				summaryHTML += "<div style=\"text-align:center;\">\n\t\t\t\t\t\t\t<video id=\"videoPlayer\" style=\"width:80%;\" controls></video>\n\n\t\t\t\t\t\t</div>";
 			} else if (isGallery) {
 				summaryHTML += '<div class="wrapper_gallery">';
 				for (var i = 0; i < gallery_data.items.length; i++) {
@@ -1350,6 +1351,12 @@ var LinkSummary = (function () {
 		// }
 		summaryHTML += "<section id='comments-container'></section>";
 		UI.el.detailWrap.append(summaryHTML);
+		setTimeout(function () {
+			if (domain == 'v.redd.it') {
+				var player = dashjs.MediaPlayer().create();
+				player.initialize(document.querySelector("#videoPlayer"), Posts.getList()[postID].secure_media.reddit_video.dash_url, false);
+			}
+		});
 		updatePostTime(data.created_utc);
 		Posts.getList()[postID].summary = summaryHTML;
 		Footer.el.postTitle.text(data.title);
@@ -2067,7 +2074,6 @@ var Posts = (function () {
 	var setList = function setList(posts) {
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
-			console.log(post);
 			if (list[post.data.id]) {
 				// if already cached
 				list[post.data.id].num_comments = post.data.num_comments;
