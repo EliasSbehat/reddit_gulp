@@ -167,9 +167,10 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function (sub) {
-		console.log(sub, 'checking--');
 		let results = list.filter(item => item.subreddit.toLowerCase() === sub.toLowerCase());
-		if (sub !== CurrentSelection.getName() || editing) {
+		console.log(sub, 'checking--', results, editing);
+		if (1) {
+			// if (sub !== CurrentSelection.getName() || editing) {
 			var url;
 			if (sub.toLowerCase() === 'frontpage') {
 				url = URLs.init + "r/" + getAllSubsString() + "/";

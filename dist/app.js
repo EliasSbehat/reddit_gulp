@@ -2504,11 +2504,12 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function loadPosts(sub) {
-		console.log(sub, 'checking--');
 		var results = list.filter(function (item) {
 			return item.subreddit.toLowerCase() === sub.toLowerCase();
 		});
-		if (sub !== CurrentSelection.getName() || editing) {
+		console.log(sub, 'checking--', results, editing);
+		if (1) {
+			// if (sub !== CurrentSelection.getName() || editing) {
 			var url;
 			if (sub.toLowerCase() === 'frontpage') {
 				url = URLs.init + "r/" + getAllSubsString() + "/";
