@@ -326,11 +326,32 @@ var Posts = (function () {
 		if (Subreddits.isEditing()) {
 			return;
 		}
+		var currentSelection = localStorage.getItem('currentSelection');
+		currentSelection = JSON.parse(currentSelection);
+		var subs = localStorage.getItem("subreeddits");
+		var results = "";
+		var reg = "";
+		if (subs) {
+			subs = JSON.parse(subs);
+			results = subs.filter(item => item.subreddit.toLowerCase() === currentSelection.name.toLowerCase());
+			if (results.length > 0) {
+				if (currentSelection.name.toLowerCase() === 'frontpage') {
+					var regexAry = [];
+					for (var r=0;r<subs.length;r++) {
+						regexAry.push(subs[r].regex);
+					}
+					reg = regexAry;
+				} else {
+					reg = results[0].regex;
+				}
+			}
+		}
+		console.log(reg, 'checking.');
 		CurrentSelection.execute(function () { // if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/", "", reg); // fourth parameter: regex ignore
 			} else {
-				load(URLs.init + "r/" + CurrentSelection.getName() + "/");
+				load(URLs.init + "r/" + CurrentSelection.getName() + "/", "", reg);
 			}
 		}, function () { // if it's channel
 			Channels.loadPosts(Channels.getByName(CurrentSelection.getName()));

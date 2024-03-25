@@ -112,7 +112,7 @@ var LinkSummary = (function() {
 				} else if (domain == 'v.redd.it') {
 					
 					summaryHTML +=
-						`<video id="redditVideo" style="width=100%" src="${Posts.getList()[postID].media.reddit_video.fallback_url}" controls></video>`;
+						`<div style="text-align:center;"><video id="redditVideo" style="width=100%" src="${Posts.getList()[postID].media.reddit_video.fallback_url}" controls></video></div>`;
 				} else if (isGallery) {
 					summaryHTML += '<div class="wrapper_gallery">';
 					for (var i=0;i<gallery_data.items.length;i++) {

@@ -1323,7 +1323,7 @@ var LinkSummary = (function () {
 				summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
 			} else if (domain == 'v.redd.it') {
 
-				summaryHTML += "<video id=\"redditVideo\" style=\"width=100%\" src=\"" + Posts.getList()[postID].media.reddit_video.fallback_url + "\" controls></video>";
+				summaryHTML += "<div style=\"text-align:center;\"><video id=\"redditVideo\" style=\"width=100%\" src=\"" + Posts.getList()[postID].media.reddit_video.fallback_url + "\" controls></video></div>";
 			} else if (isGallery) {
 				summaryHTML += '<div class="wrapper_gallery">';
 				for (var i = 0; i < gallery_data.items.length; i++) {
@@ -2100,13 +2100,36 @@ var Posts = (function () {
 		if (Subreddits.isEditing()) {
 			return;
 		}
+		var currentSelection = localStorage.getItem('currentSelection');
+		currentSelection = JSON.parse(currentSelection);
+		var subs = localStorage.getItem("subreeddits");
+		var results = "";
+		var reg = "";
+		if (subs) {
+			subs = JSON.parse(subs);
+			results = subs.filter(function (item) {
+				return item.subreddit.toLowerCase() === currentSelection.name.toLowerCase();
+			});
+			if (results.length > 0) {
+				if (currentSelection.name.toLowerCase() === 'frontpage') {
+					var regexAry = [];
+					for (var r = 0; r < subs.length; r++) {
+						regexAry.push(subs[r].regex);
+					}
+					reg = regexAry;
+				} else {
+					reg = results[0].regex;
+				}
+			}
+		}
+		console.log(reg, 'checking.');
 		CurrentSelection.execute(function () {
 			// if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
-				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/", "", reg); // fourth parameter: regex ignore
 			} else {
-				load(URLs.init + "r/" + CurrentSelection.getName() + "/");
-			}
+					load(URLs.init + "r/" + CurrentSelection.getName() + "/", "", reg);
+				}
 		}, function () {
 			// if it's channel
 			Channels.loadPosts(Channels.getByName(CurrentSelection.getName()));
