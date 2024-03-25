@@ -118,16 +118,19 @@ var Posts = (function () {
 			dataType: 'jsonp',
 			url: baseUrl + Sorting.get() + URLs.limitEnd + paging,
 			success: (result) => {
+				console.log(regex, 'check');
 				if (regex) {
 					if (regex.length > 1) {
 						let filteredPosts = result;
-						var postresAry = [];
+						var postresAry = result.data.children;
 						for (var w = 0; w < regex.length; w++) {
 							var regexData = new RegExp(regex[w], 'i');
-							var postres = result.data.children.filter(post => regexData.test(post.data.title));
-							for (var e = 0; e < postres.length; e++) {
-								postresAry.push(postres[e]);
-							}
+							var postres = postresAry.filter(post => regexData.test(post.data.title));
+							console.log(postres, regex[w]);
+							postresAry = postres;
+							// for (var e = 0; e < postres.length; e++) {
+							// 	postresAry.push(postres[e]);
+							// }
 						}
 						filteredPosts.data.children = postresAry;
 						show(filteredPosts, paging);
@@ -346,7 +349,6 @@ var Posts = (function () {
 				}
 			}
 		}
-		console.log(reg, 'checking.');
 		CurrentSelection.execute(function () { // if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
 				load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/", "", reg); // fourth parameter: regex ignore

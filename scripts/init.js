@@ -112,12 +112,32 @@ initDb().then((db) => {
 		function () { // If it's a subreddit
 			var currentSubName = CurrentSelection.getName();
 			Menu.markSelected({ name: currentSubName });
+
+			var subs = localStorage.getItem("subreeddits");
+			var results = "";
+			var reg = "";
+			if (subs) {
+				subs = JSON.parse(subs);
+				results = subs.filter(item => item.subreddit.toLowerCase() === currentSubName.toLowerCase());
+				if (results.length > 0) {
+					if (currentSubName.toLowerCase() === 'frontpage') {
+						var regexAry = [];
+						for (var r = 0; r < subs.length; r++) {
+							regexAry.push(subs[r].regex);
+						}
+						reg = regexAry;
+					} else {
+						reg = [results[0].regex];
+					}
+				}
+			}
+
 			// Load links
 			if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
 				CurrentSelection.setSubreddit('frontPage');
-				Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+				Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/", "", reg);
 			} else {
-				Posts.load(URLs.init + "r/" + currentSubName + "/");
+				Posts.load(URLs.init + "r/" + currentSubName + "/", "", reg);
 			}
 			UI.setSubTitle(currentSubName);
 		}, function () { // If it's a channel

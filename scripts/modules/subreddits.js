@@ -167,6 +167,7 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function (sub) {
+		console.log(sub, 'checking--');
 		let results = list.filter(item => item.subreddit.toLowerCase() === sub.toLowerCase());
 		if (sub !== CurrentSelection.getName() || editing) {
 			var url;

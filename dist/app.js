@@ -1894,18 +1894,21 @@ var Posts = (function () {
 			dataType: 'jsonp',
 			url: baseUrl + Sorting.get() + URLs.limitEnd + paging,
 			success: function success(result) {
+				console.log(regex, 'check');
 				if (regex) {
 					if (regex.length > 1) {
 						var filteredPosts = result;
-						var postresAry = [];
+						var postresAry = result.data.children;
 						for (var w = 0; w < regex.length; w++) {
 							var regexData = new RegExp(regex[w], 'i');
-							var postres = result.data.children.filter(function (post) {
+							var postres = postresAry.filter(function (post) {
 								return regexData.test(post.data.title);
 							});
-							for (var e = 0; e < postres.length; e++) {
-								postresAry.push(postres[e]);
-							}
+							console.log(postres, regex[w]);
+							postresAry = postres;
+							// for (var e = 0; e < postres.length; e++) {
+							// 	postresAry.push(postres[e]);
+							// }
 						}
 						filteredPosts.data.children = postresAry;
 						show(filteredPosts, paging);
@@ -2122,7 +2125,6 @@ var Posts = (function () {
 				}
 			}
 		}
-		console.log(reg, 'checking.');
 		CurrentSelection.execute(function () {
 			// if it's subreddit
 			if (CurrentSelection.getName().toLowerCase() === 'frontpage') {
@@ -2502,6 +2504,7 @@ var Subreddits = (function () {
 	};
 
 	var loadPosts = function loadPosts(sub) {
+		console.log(sub, 'checking--');
 		var results = list.filter(function (item) {
 			return item.subreddit.toLowerCase() === sub.toLowerCase();
 		});
@@ -3192,12 +3195,34 @@ initDb().then(function (db) {
 		// If it's a subreddit
 		var currentSubName = CurrentSelection.getName();
 		Menu.markSelected({ name: currentSubName });
+
+		var subs = localStorage.getItem("subreeddits");
+		var results = "";
+		var reg = "";
+		if (subs) {
+			subs = JSON.parse(subs);
+			results = subs.filter(function (item) {
+				return item.subreddit.toLowerCase() === currentSubName.toLowerCase();
+			});
+			if (results.length > 0) {
+				if (currentSubName.toLowerCase() === 'frontpage') {
+					var regexAry = [];
+					for (var r = 0; r < subs.length; r++) {
+						regexAry.push(subs[r].regex);
+					}
+					reg = regexAry;
+				} else {
+					reg = [results[0].regex];
+				}
+			}
+		}
+
 		// Load links
 		if (currentSubName.toUpperCase() === 'frontPage'.toUpperCase()) {
 			CurrentSelection.setSubreddit('frontPage');
-			Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/");
+			Posts.load(URLs.init + "r/" + Subreddits.getAllSubsString() + "/", "", reg);
 		} else {
-			Posts.load(URLs.init + "r/" + currentSubName + "/");
+			Posts.load(URLs.init + "r/" + currentSubName + "/", "", reg);
 		}
 		UI.setSubTitle(currentSubName);
 	}, function () {
