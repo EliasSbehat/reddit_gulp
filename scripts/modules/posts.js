@@ -296,6 +296,7 @@ var Posts = (function () {
 	var setList = function (posts) {
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
+			console.log(post);
 			if (list[post.data.id]) { // if already cached
 				list[post.data.id].num_comments = post.data.num_comments;
 				list[post.data.id].created_utc = post.data.created_utc;
@@ -316,6 +317,7 @@ var Posts = (function () {
 					preview: post.data.preview,
 					is_gallery: post.data.is_gallery,
 					media: post.data.media,
+					secure_media: post.data.secure_media,
 					media_metadata: post.data.media_metadata,
 					gallery_data: post.data.gallery_data,
 					over_18: post.data.over_18,

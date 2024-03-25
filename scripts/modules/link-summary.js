@@ -110,9 +110,17 @@ var LinkSummary = (function() {
 						 </a>
 						 <div class="video-preview-box"></div>`;
 				} else if (domain == 'v.redd.it') {
-					
 					summaryHTML +=
-						`<div style="text-align:center;"><video id="redditVideo" style="width=100%" src="${Posts.getList()[postID].media.reddit_video.fallback_url}" controls></video></div>`;
+						`<div style="text-align:center;">
+							<video id='my-video' class='video-js' data-setup='{}' style="width=100%" controls>
+								<source src='${Posts.getList()[postID].secure_media.reddit_video.dash_url}' type='video/mp4'>
+								<source src='${Posts.getList()[postID].secure_media.reddit_video.fallback_url}' type='audio/mp4'>
+								<p class='vjs-no-js'>
+									To view this video please enable JavaScript, and consider upgrading to a web browser that
+									<a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>
+								</p>
+							</video>
+						</div>`;
 				} else if (isGallery) {
 					summaryHTML += '<div class="wrapper_gallery">';
 					for (var i=0;i<gallery_data.items.length;i++) {

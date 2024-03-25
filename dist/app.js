@@ -1322,8 +1322,7 @@ var LinkSummary = (function () {
 			if (youTubeID) {
 				summaryHTML += "<a class=\"video-preview-btn preview-container blck\" \n\t\t\t\t\t\t\t\thref=\"#\" data-id=\"" + youTubeID + "\">\n\t\t\t\t\t\t <img class=\"video-preview\" \n\t\t\t\t\t\t      src=\"//img.youtube.com/vi/" + youTubeID + "/hqdefault.jpg\"/>\n\t\t\t\t\t\t </a>\n\t\t\t\t\t\t <div class=\"video-preview-box\"></div>";
 			} else if (domain == 'v.redd.it') {
-
-				summaryHTML += "<div style=\"text-align:center;\"><video id=\"redditVideo\" style=\"width=100%\" src=\"" + Posts.getList()[postID].media.reddit_video.fallback_url + "\" controls></video></div>";
+				summaryHTML += "<div style=\"text-align:center;\">\n\t\t\t\t\t\t\t<video id='my-video' class='video-js' data-setup='{}' style=\"width=100%\" controls>\n\t\t\t\t\t\t\t\t<source src='" + Posts.getList()[postID].secure_media.reddit_video.dash_url + "' type='video/mp4'>\n\t\t\t\t\t\t\t\t<source src='" + Posts.getList()[postID].secure_media.reddit_video.fallback_url + "' type='audio/mp4'>\n\t\t\t\t\t\t\t\t<p class='vjs-no-js'>\n\t\t\t\t\t\t\t\t\tTo view this video please enable JavaScript, and consider upgrading to a web browser that\n\t\t\t\t\t\t\t\t\t<a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</video>\n\t\t\t\t\t\t</div>";
 			} else if (isGallery) {
 				summaryHTML += '<div class="wrapper_gallery">';
 				for (var i = 0; i < gallery_data.items.length; i++) {
@@ -2068,6 +2067,7 @@ var Posts = (function () {
 	var setList = function setList(posts) {
 		for (var i = 0; i < posts.children.length; i++) {
 			var post = posts.children[i];
+			console.log(post);
 			if (list[post.data.id]) {
 				// if already cached
 				list[post.data.id].num_comments = post.data.num_comments;
@@ -2090,6 +2090,7 @@ var Posts = (function () {
 					preview: post.data.preview,
 					is_gallery: post.data.is_gallery,
 					media: post.data.media,
+					secure_media: post.data.secure_media,
 					media_metadata: post.data.media_metadata,
 					gallery_data: post.data.gallery_data,
 					over_18: post.data.over_18,
