@@ -425,6 +425,9 @@ var Backup = (function () {
 		if (data.comments) {
 			Store.setItem("comments", JSON.stringify(data.comments));
 		}
+		if (data.archiveCommentsData) {
+			Store.setItem("archives_comments", JSON.stringify(data.archiveCommentsData));
+		}
 		refresh = true;
 		// if (data.channels) {
 		// 	refresh = true;
@@ -493,8 +496,14 @@ var Backup = (function () {
 						}
 					}
 					var commentsData = [];
+					var archiveCommentsData = [];
 					if (comments.length > 0) {
 						for (var u = 0; u < comments[0].values.length; u++) {
+							archiveCommentsData.push({
+								"id": comments[0].values[u][0],
+								"subreddit": comments[0].values[u][2],
+								"comments": comments[0].values[u][1]
+							});
 							commentsData.push({
 								"id": comments[0].values[u][0],
 								"count": comments[0].values[u][1],
@@ -511,10 +520,10 @@ var Backup = (function () {
 					var archivesData = [];
 					if (archives.length > 0) {
 						for (var q = 0; q < archives[0].values.length; q++) {
-							archivesData.push(archives[0].values[q][0]);
+							archivesData.push(decodeURIComponent(archives[0].values[q][0]));
 						}
 					}
-					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData, comments: commentsData });
+					loadData({ subreddits: defaults, discards: discardsData, archives: archivesData, comments: commentsData, archiveCommentsData: archiveCommentsData });
 				});
 			};
 			r.readAsArrayBuffer(f);
@@ -561,8 +570,9 @@ var Backup = (function () {
 						}
 						if (archives) {
 							archives = JSON.parse(archives);
+							console.log(archives);
 							for (var p = 0; p < archives.length; p++) {
-								db.run("INSERT INTO archives VALUES ('" + archives[p] + "');");
+								db.run('INSERT INTO archives VALUES ("' + encodeURIComponent(archives[p]) + '");');
 							}
 						}
 						if (archives_comments) {
@@ -2452,6 +2462,7 @@ var Subreddits = (function () {
 				}
 			}
 		}
+		console.log(comments);
 		$("#archive_subs").html(aSubredditDom);
 	};
 

@@ -106,6 +106,7 @@ var Subreddits = (function () {
 				}
 			}
 		}
+		console.log(comments);
 		$("#archive_subs").html(aSubredditDom);
 	};
 
